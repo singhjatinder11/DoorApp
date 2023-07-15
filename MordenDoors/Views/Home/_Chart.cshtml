@@ -1,0 +1,79 @@
+﻿<script src="~/Scripts/Chart.bundle.min.js"></script>
+<script src="~/Scripts/utils.js"></script>
+<style>
+    canvas {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+    }
+    .chart-wrap{
+        max-width:653px;
+        margin:0 auto 30px;
+    }
+</style>
+<div>
+    <div id="canvas-holder" class="chart-wrap text-center">
+        <canvas id="chart-area"></canvas>
+    </div>
+</div>
+
+<script>
+    var config = {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: @ViewBag.DataPoints,
+                backgroundColor: [
+                    window.chartColors.orange,
+                    window.chartColors.red,                    
+                    window.chartColors.yellow,
+                    window.chartColors.green
+                  
+                ],
+                label: 'Dataset 1'
+            }],
+            labels: [
+                'Ready',
+                'Quote',
+                'InProgress',                
+                'Completed'
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Order Status'
+                },
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    };
+
+    window.onload = function () {
+        var ctx = document.getElementById('chart-area').getContext('2d');
+        window.myDoughnut = new Chart(ctx, config);
+    };
+
+   
+
+    document.getElementById('changeCircleSize').addEventListener('click', function () {
+        if (window.myDoughnut.options.circumference === Math.PI) {
+            window.myDoughnut.options.circumference = 2 * Math.PI;
+            window.myDoughnut.options.rotation = -Math.PI / 2;
+        } else {
+            window.myDoughnut.options.circumference = Math.PI;
+            window.myDoughnut.options.rotation = -Math.PI;
+        }
+
+        window.myDoughnut.update();
+    });
+</script>
+

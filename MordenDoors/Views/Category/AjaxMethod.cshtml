@@ -1,0 +1,142 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <style type="text/css">
+        body {
+            font-family: Arial;
+            font-size: 10pt;
+        }
+        table {
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+
+            table th {
+                background-color: #B8DBFD;
+            }
+
+            table th, table td {
+                padding: 5px;
+                border: 1px solid #ccc;
+            }
+
+            table, table table td {
+                border: 0px solid #ccc;
+            }
+
+                table th a, table th a:visited {
+                    color: #333;
+                    font-weight: bold;
+                }
+
+        .Pager span {
+            text-align: center;
+            color: #333;
+            display: inline-block;
+            width: 20px;
+            background-color: #B8DBFD;
+            margin-right: 3px;
+            line-height: 150%;
+            border: 1px solid #B8DBFD;
+        }
+
+        .Pager a {
+            text-align: center;
+            display: inline-block;
+            width: 20px;
+            background-color: #ccc;
+            color: #333;
+            border: 1px solid #ccc;
+            margin-right: 3px;
+            line-height: 150%;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h4>Customers</h4>
+    <hr />
+    <table id="tblCustomers" cellpadding="0" cellspacing="0">
+        <tr>
+            <th><a href="javascript:;">CategoryId</a></th>
+            <th><a href="javascript:;">CategoryName</a></th>
+            <th><a href="javascript:;">Description</a></th>
+            <th><a href="javascript:;">SortOrder</a></th>
+            <th><a href="javascript:;">Is Main</a></th>
+            <th><a href="javascript:;">Is Active</a></th>
+        </tr>
+        <tr style="display:none">
+            <td>CategoryId</td>
+            <td>CategoryName</td>
+            <td>Description</td>
+            <td>SortOrder</td>
+            <td>Is Main</td>
+            <td>Is Active</td>
+        </tr>
+    </table>
+    <br />
+    <div class="Pager"></div>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="~/Scripts/Pager.min.js"></script>
+    <script type="text/javascript">
+        var sortName = "";
+        var sortDirection = "ASC";
+        $(function () {
+            GetCustomers(1);
+        });
+        $("body").on("click", "#tblCustomers th a", function () {
+            sortName = $(this).html();
+            sortDirection = sortDirection == "ASC" ? "DESC" : "ASC";
+            GetCustomers(1);
+        });
+        $("body").on("click", ".Pager .page", function () {
+            GetCustomers(parseInt($(this).attr('page')));
+        });
+        function GetCustomers(pageIndex) {
+            $.ajax({
+                type: "POST",
+                url: "/Category/AjaxMethod",
+                data: '{pageIndex: ' + pageIndex + ', sortName: "' + sortName + '", sortDirection: "' + sortDirection + '"}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: OnSuccess,
+                failure: function (response) {
+                    alert(response.d);
+                },
+                error: function (response) {
+                    alert(response.d);
+                }
+            });
+        };
+        function OnSuccess(response) {
+            var model = response;
+            var row = $("#tblCustomers tr:last-child").removeAttr("style").clone(true);
+            $("#tblCustomers tr").not($("#tblCustomers tr:first-child")).remove();
+            $.each(model.Customers, function () {
+                var customer = this;
+                $("td", row).eq(0).html(customer.CategoryId);
+                $("td", row).eq(1).html(customer.CategoryName);
+                $("td", row).eq(2).html(customer.Description);
+                $("td", row).eq(3).html(customer.SortOrder);
+                $("td", row).eq(3).html(customer.IsMain);
+                $("td", row).eq(3).html(customer.IsActive);
+                $("#tblCustomers").append(row);
+                row = $("#tblCustomers tr:last-child").clone(true);
+            });
+            $(".Pager").ASPSnippets_Pager({
+                ActiveCssClass: "current",
+                PagerCssClass: "pager",
+                PageIndex: model.PageIndex,
+                PageSize: model.PageSize,
+                RecordCount: model.RecordCount
+            });
+        };
+    </script>
+</body>
+</html>

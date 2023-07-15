@@ -1,0 +1,27 @@
+﻿@model MordenDoors.ViewModels.CategortyViewModel
+
+<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+</button>
+    <h4 class="text-center mt-2 " id="exampleModalLabel">Category Detail</h4>
+    
+<div class="mt-3">
+    <table class="table table-striped ">
+        <tbody style="text-align:center">
+            <tr>
+                <th>CategoryName</th>
+                <td>@Html.DisplayFor(model => model.CategoryName)</td>
+            </tr>
+            <tr>
+                <th>CategoryDescription</th>
+                <td>@Html.DisplayFor(model => model.CategoryDescription)</td>
+            </tr>
+            <tr>
+                <th>IsActive</th>
+                <td>@Html.DisplayFor(model => model.IsActive)</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+

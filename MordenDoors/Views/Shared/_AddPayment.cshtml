@@ -1,0 +1,98 @@
+﻿@model MordenDoors.ViewModels.OrderPaymentViewModel
+
+@using (Html.BeginForm("AddPayment", "Order", FormMethod.Post, new { role = "form", id="addPayment" }))
+{
+    <div class="row">
+        <div class="col-md-10 text-center">
+            <h2>Add Payment</h2>
+        </div>
+        <div class="col-md-2">
+            <button type='button' class='close' data-dismiss='modal'>&times;</button>
+        </div>
+    </div>
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row p-1">
+            <div class="form-group">
+                @Html.HiddenFor(model => model.AddPayment.OrderId, htmlAttributes: new { @class = "control-label" })
+                @Html.HiddenFor(model => model.AddPayment.OrderId, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            <div class="col-sm-6 col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AddPayment.OrderTotalAmount, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.AddPayment.OrderTotalAmount, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.AddPayment.OrderTotalAmount, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AddPayment.PendingAmount, htmlAttributes: new { @class = "control-label" })
+                    @Html.EditorFor(model => model.AddPayment.PendingAmount, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    @Html.ValidationMessageFor(model => model.AddPayment.PendingAmount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AddPayment.PaymentMode, htmlAttributes: new { @class = "control-label required" })
+                    @Html.DropDownListFor(model => model.AddPayment.PaymentMode, new SelectList(Enum.GetValues(typeof(MordenDoors.ViewModels.OrderPaymentViewModel.PaymentModeOption))), "--Payment Mode--", new { @class = "form-control", @required = "required" })
+                    @Html.ValidationMessageFor(model => model.AddPayment.PaymentMode, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AddPayment.Payment, htmlAttributes: new { @class = "control-label required" })
+                    @Html.EditorFor(model => model.AddPayment.Payment, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                    <span id="patmnt" class="text-danger">Amount Can't be Zero or Negative</span>
+                    @Html.ValidationMessageFor(model => model.AddPayment.Payment, "", new { @class = "text-danger" })
+
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AddPayment.Comments, htmlAttributes: new { @class = "control-label" })
+                    @Html.TextAreaFor(model => model.AddPayment.Comments, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.AddPayment.Comments, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group text-center">
+                    <input type="button" value="Add Payment" class="btn btn-lg bg-grow-early text-white" id="btSubmit" onclick="Payment(this)" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        $('#patmnt').hide();
+    });
+    function Payment(event) {
+        var ammout = $('#AddPayment_Payment').val();
+        if (ammout <= 0.00 || ammout == "") {
+            $('#patmnt').show();
+            event.preventDefault();
+        }
+        else {
+            $('#patmnt').hide();
+
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Are you sure want to delete this item?',
+                buttons: {
+                    Yes: function () {
+                        var data = $('#addPayment').serialize();
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("AddPayment", "Order")',
+                            data: data,
+                            cache: false,
+                            success: function (response) {
+                                window.location.reload();
+                        },
+                        error: function (response) {
+                            alert("error");
+                        }
+         });},
+                    No: function () {
+                        alert("No")
+                    }
+                }
+            });
+            return false;
+        }
+    }
+</script>

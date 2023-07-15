@@ -1,0 +1,320 @@
+﻿@model MordenDoors.Models.EditProductModel
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+
+@using (Html.BeginForm("EditProduct", "Product", FormMethod.Post, new { role = "form", enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="form-horizontal">
+        <h2 style="text-align:center">Update Product</h2>
+
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.HiddenFor(model => Model.EditProductId)
+        </div>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="imagebox">
+                        <div align="center">
+                            <img id="user_img" src="@Url.Content(Model.EditproductImages)" style="border:1px solid; height:170px; width:200px" />
+                        </div>
+                        <br />
+                        <div align="center" style="margin-left:81px">
+                            <input type="file" id="file" name="file" accept="image/x-png,image/gif,image/jpeg, image/jpg, image/png, image/PNG, image/JPG, image/JPEG" onchange="return show(this);" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => Model.EditCategoryId, "Categories", htmlAttributes: new { @class = "control-label required" })
+
+                                @Html.DropDownList("EditCategoryId", Model.EditCategories, "-- Select Category --", new { @class = "form-control", required = "required" })
+                                @Html.ValidationMessageFor(model => Model.EditCategoryId, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => Model.EditProductName, "Product Name", htmlAttributes: new { @class = "control-label required " })
+
+                                @Html.EditorFor(model => Model.EditProductName, new { htmlAttributes = new { @class = "form-control", required = "required" } })
+                                @Html.ValidationMessageFor(model => Model.EditProductName, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            @*<div class="form-group">
+            @Html.Label("Work Stage", htmlAttributes: new { @class = "control-label required" })
+
+                @Html.ListBoxFor(m => m.EditUserRole, Model.EditUserRoles, new { @multiple = "multiple", @class = "multiselect-ui form-control", required = "required" })
+                @Html.ValidationMessageFor(model => Model.EditUserRole, "", new { @class = "text-danger" })
+
+        </div>*@
+
+                            <div class="form-group">
+                                @Html.Label("Work Stage", htmlAttributes: new { @class = "control-label required"  })
+                                <span style="color:red" id="validation"></span>
+                                <ul id="sortable">
+                                    @foreach (var r in Model.EditUserRoles)
+                                    {
+                                        <li class="ui-state-default required">
+                                            <input type="Checkbox" data-id="@r.Value" onchange="getcheckvalue(this)" @(r.Selected?"checked":"") /><span class="ui-icon ui-icon-arrowthick-2-n-s required"></span>@r.Text
+                                        </li>
+                                        
+                                    }
+                                </ul>
+                                <span style="color:red" id="validation"></span>
+                            </div>
+                            @Html.HiddenFor(model => model.EditUserRole, new { @id = "hdchkvalues" })
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Weight, "Weight", htmlAttributes: new { @class = "control-label" })
+
+                                @Html.EditorFor(model => model.Weight, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.Weight, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => Model.EditUnitsOfMeasureID, "Unit Of Measurement", htmlAttributes: new { @class = "control-label required" })
+
+                                @Html.DropDownList("EditUnitsOfMeasureID", Model.EditUnitsOfMeasures, "-- Select Unit --", new { @class = "form-control", required = "required" })
+                                @Html.ValidationMessageFor(model => Model.EditUnitsOfMeasureID, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => Model.EditProductDescription, "Product Description", htmlAttributes: new { @class = "control-label " })
+
+                                @Html.EditorFor(model => Model.EditProductDescription, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => Model.EditProductDescription, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.MinimumSquareFeet, "Minimum Square Feet", htmlAttributes: new { @class = "control-label" })
+
+                                @Html.EditorFor(model => model.MinimumSquareFeet, new { htmlAttributes = new { @class = "form-control "+( Model.EditUnitsOfMeasureID == 1 ?"": "disabled") } })
+                                @Html.ValidationMessageFor(model => model.MinimumSquareFeet, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                       
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => Model.EditRate, "Amount (CAD)", htmlAttributes: new { @class = "control-label" })
+
+                                @Html.EditorFor(model => Model.EditRate, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => Model.EditRate, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => Model.EditSKU, "SKU", htmlAttributes: new { @class = "control-label" })
+
+                                @Html.EditorFor(model => Model.EditSKU, new { htmlAttributes = new { @class = "form-control" } })
+
+                                @Html.ValidationMessageFor(model => Model.EditSKU, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => Model.EditIsActive, "Is Active", htmlAttributes: new { @class = "control-label " })
+
+                                <div class="checkbox">
+                                    @*@Html.EditorFor(model => Model.EditIsActive)*@
+
+                                    @Html.CheckBoxFor(model => model.EditIsActive, new { @id = "isactive" })
+                                    @Html.ValidationMessageFor(model => Model.EditIsActive, "", new { @class = "text-danger" })
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-12 text-center">
+                            <input type="submit" value="Save" class="btn bg-grow-early text-white" onclick=" return fn_valid();" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+}
+
+<script type="text/javascript">
+
+    function fn_valid() {
+        if ($('#hdchkvalues').val() == null || $('#hdchkvalues').val().length == 0) {
+
+            $("#validation").html("Select Skill");
+            return false;
+        }
+        else {
+            $("#validation").html("");
+            return true;
+        }
+    }
+    var Checkboxvalues = [];
+
+    function loadlastitme() {
+       @foreach (var data in Model.EditUserRoles)
+       {
+           if(data.Selected == true)
+           {
+           <text>     
+                Checkboxvalues.push(@data.Value);
+                $('#hdchkvalues').val(Checkboxvalues);
+            </text>
+           }
+        }
+    }
+    $(document).ready(function () {
+        loadlastitme();
+        $("#sortable").sortable({
+            update: function (event, ui) {
+                Checkboxvalues = [];
+                $(this).children().each(function () {
+                    var checkbox = $(this).find('input');
+                    if (checkbox.prop('checked')) {
+                        Checkboxvalues.push(checkbox.attr('data-id'));
+                    }
+                })
+                $('#hdchkvalues').val(Checkboxvalues);
+            }
+        });
+        $("#sortable").disableSelection();
+
+        $('#isactive').change(function () {
+            if ($(this).prop("checked")) {
+                return;
+            }
+            swal("Once Disable, you will not be able to find record in list")
+        });
+        if ($("#MinimumSquareFeet").hasClass('disabled')) {
+            $("#MinimumSquareFeet").attr("disabled", "disabled");
+        }
+        else {
+            $("#MinimumSquareFeet").removeAttr("disabled", "disabled");
+        }
+        
+        $("#EditUnitsOfMeasureID").change(function () {
+            if ($('#EditUnitsOfMeasureID :selected').text() == "Square Feet") {
+                $("#MinimumSquareFeet").removeAttr("disabled", "disabled");
+            }
+            else {
+                $("#MinimumSquareFeet").attr("disabled", "disabled");
+            }
+        });
+    })
+
+    function getcheckvalue(chk) {
+        Checkboxvalues = [];
+        $('#sortable li').each(function () {
+            var checkbox = $(this).find('input');
+            if (checkbox.prop('checked')) {
+                Checkboxvalues.push(checkbox.attr('data-id'));
+            }
+        })
+        $('#hdchkvalues').val(Checkboxvalues);
+    }
+
+    function fn_valid() {
+        if ($('#hdchkvalues').val() == null || $('#hdchkvalues').val().length == 0) {
+            $("#validation").html("please select at least one work stage");
+            return false;
+        }
+        else {
+            $("#validation").html("");
+            return true;
+        }
+    }
+
+    function show() {
+
+        var inputfile = document.getElementById('file');
+
+        var filePath = inputfile.value;
+        var allowedExtension = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
+        if (allowedExtension.exec(filePath)) {
+            if (inputfile.files && inputfile.files[0]) {
+
+                var fileRdr = new FileReader();
+                fileRdr.onload = function (e) {
+                    $('#user_img').attr('src', e.target.result);
+                };
+                fileRdr.readAsDataURL(inputfile.files[0])
+            }
+        }
+        else {
+            inputfile.value = '';
+            var $image = $('#user_img');
+
+            $image.removeAttr('src').replaceWith($image.clone());
+            alert('Please upload file having extensions .jpeg/ .jpg/ .png/ .gif only. ');
+            return false;
+        }
+    }
+</script>
+
+
+<style>
+
+    .swal-modal {
+        margin-left: 301px;
+        margin-top: 200px;
+    }
+
+    #sortable {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+        #sortable li {
+            float: left;
+            width: 100%;
+            position: relative;
+            margin: 0px 0px 8px;
+            padding: 6px 15px;
+            font-size: 14px;
+        }
+
+            #sortable li span {
+                position: absolute;
+                left: 5px;
+                top: 10px;
+            }
+
+            #sortable li input[type="checkbox"] {
+                margin: 0px 8px;
+            }
+</style>

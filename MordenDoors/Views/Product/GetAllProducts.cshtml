@@ -1,0 +1,393 @@
+﻿@model MordenDoors.ViewModels.ProductViewModel
+
+@{
+    ViewBag.Title = "Product List";
+}
+
+
+<style>
+    #btnShowModal {
+        border: none;
+        background-color: transparent;
+        color: #337ab7;
+    }
+
+    .ui-table-wrap {
+        position: relative;
+    }
+
+    .adjust-dropdowndiv {
+        position: absolute;
+        top: -3px;
+        width: 100%;
+        max-width: 230px;
+        right: 225px;
+    }
+
+        .adjust-dropdowndiv .dropdown-menu {
+            transform: translate(0,0);
+            margin: 0px;
+        }
+
+            .adjust-dropdowndiv .dropdown-menu.open {
+                max-height: 255px;
+                min-height: 255px !important;
+                height: 100%;
+                overflow: hidden;
+                overflow-y: auto !important;
+            }
+
+                .adjust-dropdowndiv .dropdown-menu.open ul {
+                    overflow: visible;
+                }
+
+    .bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*=col-] {
+        float: none;
+        display: inline-block;
+        width: 100%;
+        position: relative;
+    }
+
+    .adjust-dropdowndiv.select-category-dropdown {
+        position: relative;
+        right: 0px;
+        max-width: 270px;
+    }
+
+        .adjust-dropdowndiv.select-category-dropdown span.title {
+            float: left;
+            margin-right: 10px;
+            line-height: 30px;
+        }
+
+        .adjust-dropdowndiv.select-category-dropdown .form-control {
+            float: left;
+            width: calc(100% - 110px);
+        }
+</style>
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title col-md-2">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    @ViewBag.Title
+                </div>
+                <div class="text-right col-md-10">
+                    <a href="javascript:void(0);" onclick="CreateProduct(0)" class="fa fa-plus btn bg-grow-early mb-2 text-white" data-toggle="tooltip" title="Add Product" data-placement="bottom">Add Product</a>
+                    @Html.ActionLink("Sync Products", "SyncProducts", "Admin", null, new { @class = "fa fa-refresh btn btn-alternate mb-2 text-white" })
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="option-item-wrap">
+                    <ul>
+                        @foreach (var item in Model.Categories)
+                        {
+                        <li data-value="@item.Text">
+                            <a href="javascript:void(0);">
+                                @item.Text
+                            </a>
+                        </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @*<div class="col-md-6 ui-table-wrap">
+                        <div class="adjust-dropdowndiv select-category-dropdown">
+                            <span class="title d-md-inline">Select Category</span>
+                            <select class="form-control selectpicker" id="ddlcategory" data-live-search="true">
+                                @foreach (SelectListItem i in Model.Categories)
+                                {
+                                    if (Model.CategoryId.HasValue && i.Value == Model.CategoryId.Value.ToString())
+                                    {
+                                        <option selected data-category-id="@i.Value" data-tokens="@i.Text">@i.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option data-category-id="@i.Value" data-tokens="@i.Text">@i.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>*@
+                    <div class="col-sm-12 col-md-12 col-lg-12">
+                        <table id="table_id" class="table table-responsive-sm table-responsive-md table-responsive-lg  table-bordered table-striped table-hover js-basic-example dataTable">
+                            <thead class="container" id="Header">
+                                <tr>
+                                    <th style="width:190px;">
+                                        Product Name
+                                    </th>
+                                    <th style="width:200px;">
+                                        Product Description
+                                    </th>
+                                    <th>
+                                        Category Name
+                                    </th>
+                                    <th>
+                                        Amount (CAD)
+                                    </th>
+                                    <th>
+                                        Unit Name
+                                    </th>
+                                    <th>
+                                        Weight
+                                    </th>
+                                    <th>
+                                        SKU
+                                    </th>
+                                    <th>
+                                        IsActive
+                                    </th>
+                                    <th>
+                                        Images
+                                    </th>
+                                    <th>Action</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Products)
+                                {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ProductName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ProductDescription)
+                                    </td>
+                                    <td class="col1">
+                                        @Html.DisplayFor(modelItem => item.Category.CategoryName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Rate)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.UnitMeasure.UnitName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Weight)
+                                    </td>
+
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.SKU)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.IsActive)
+                                    </td>
+                                    <td>
+                                        <div class="image">
+                                            @if (!string.IsNullOrEmpty(item.productImage))
+                                            {
+
+                                                <img class="img-responsive" id="imgid" src="@item.productImage" height="40" width="40" />
+                                            }
+                                            else
+                                            {
+                                                <img class="img-responsive" id="imgid" src="../../Images/ImageNotAvailable.png" height="40" width="40" />
+                                            }
+                                        </div>
+
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="javascript:void(0);" onclick="UpdateProduct('@item.ProductId')" data-toggle="tooltip" title="Update" data-placement="left"> <span class="fa fa-edit text-success"></span></a> &nbsp;
+                                        
+                                        <a href="javascript:void(0);" onclick="Deleteproduct('@item.ProductId');" data-toggle="tooltip" title="Delete" data-placement="right"> <span class="fa fa-trash text-danger"></span></a>
+                                    </td>
+
+
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="myProductDetailModal" style="display:none" role="dialog">
+    <div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <h4 class="text-center mt-2 " id="exampleModalLabel">Product Detail</h4>
+    <div class="form-horizontal">
+        <table class="table table-striped ">
+
+            <tbody style="text-align:center">
+                <tr>
+                    @*<th>Product No.</th>*@
+                    <td colspan="2" id="imgtd"></td>
+                </tr>
+                <tr>
+                    <th>Product No.</th>
+                    <td id="productId"></td>
+                </tr>
+                <tr>
+                    <th>Product Name</th>
+                    <td id="productName"></td>
+                </tr>
+                <tr>
+                    <th>Category Name</th>
+                    <td id="categoryName"></td>
+                </tr>
+
+                <tr>
+                    <th>Product Description</th>
+                    <td id="productDescription"></td>
+                </tr>
+                <tr>
+                    <th>Unit</th>
+                    <td id="unit"></td>
+                </tr>
+                <tr>
+                    <th>Rate</th>
+                    <td id="rate"></td>
+                </tr>
+                @*<tr>
+                        <th>SKU</th>
+                        <td id="sku"></td>
+                    </tr>*@
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script type="text/javascript">
+        var catName;
+        var table;
+        $(document).ready(function () { 
+            table = $('#table_id').dataTable({
+                "paging": true,
+                "ordering": true,
+                "info": true,
+                "searching": true,
+                "pagingType": "full_numbers",
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "scrollCollapse": true,
+                "responsive": true
+            });
+
+            $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });  
+            
+            $("#ddlcategory").on("change", function () {
+            var value = this.selectedOptions[0].dataset.categoryId === '' ? 0 : this.selectedOptions[0].dataset.categoryId;
+            window.location.href = '/Product/GetAllProducts/' + parseInt(value);
+            });
+
+            // for initial active Category
+            $('.option-item-wrap ul li:nth-child(1)').addClass('active');
+        });
+
+        $('.option-item-wrap ul li a ').on('click', function () {
+            $('.option-item-wrap ul li').removeClass('active');
+            $(this).parent().addClass('active');
+            catName = $(this).parent().attr('data-value');            
+            if (catName != "All Categories")
+                filterData(catName);
+            else
+                filterData('');
+        });
+
+        function filterData(catName) {
+            // for filter according to Category Id
+            table.api().column(2).search(catName).draw();
+        }
+        function CreateProduct(id) {
+        $.get("@Url.Action("CreateProduct","Product")/" + id,
+            function (data) {
+                $('.modal-body').html('');
+                $('.modal-body').html(data);
+            });
+            if (id == 0) {
+                $("#MordenModal").modal("show");
+            }
+        }
+
+        function Deleteproduct(id) {
+            if (confirm("Are you sure want to delete this item!")) {
+                window.location = "@Url.Action("DeleteProduct", "Product")?id=" + id+"&catid=0";
+
+            } else {
+                return false}
+                $("#MordenModal").modal("show");
+        }
+
+        function UpdateProduct(id) {
+        $.get("@Url.Action("EditProduct","Product")/" + id,
+            function (data) {
+                $('.modal-body').html(data);
+            });
+        $("#MordenModal").modal("show");
+        }
+
+        function Deleteproduct(id)
+        {
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Are you sure want to delete this item?',
+                buttons: {
+                    Yes: function () {
+                        window.location = "@Url.Action("DeleteProduct", "Product")?id=" + id+"&catid=0";
+                    },
+                    No: function () { }
+                }
+            });
+            //$("#MordenModal").modal("show");
+        }
+
+        function ViewProductDetail(id, td) {
+            var td = $(td).parent('td').parent('tr').find('td');
+            var link = $(td[7]).html();
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("ProductDetail", "Product")',
+            data: JSON.stringify({ id: id }),
+            contentType: "application/json;",
+            dataType: "json",
+            success: function (response) {
+                $('#productId').text('');
+                $('#productId').text(response.data.ProductId);
+                $('#productName').text('');
+                $('#productName').text(response.data.ProductName);
+                $('#productDescription').text('');
+                $('#productDescription').text(response.data.ProductDescription);
+                $('#categoryName').text('');
+                $('#categoryName').text(response.data.CategoryName);
+                $('#unit').text('');
+                $('#unit').text(response.data.UnitName);
+                $('#rate').text('');
+                $('#rate').text(response.data.Rate);
+                //$('#sku').text('');
+                //$('#sku').text(response.data.SKU);
+                //$('#sku').text('');
+                $('#imgtd').html(link);
+                $('#MordenModal .modal-body').html($("#myProductDetailModal").html());
+                $("#MordenModal").modal("show");
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+         });
+        }
+
+        $(function () {
+        var update = '@TempData["UpdateMessage"]';
+        var insert = '@TempData["SuccessMessage"]';
+        if (update != '')
+            swal({ title: "Done", text: "Record Updated Successfully", icon: "success", button: "Ok" });
+        else if (insert != ''){
+            swal({ title: "Done", text: "Record Added Successfully", icon: "success", button: "Ok" });
+        }
+        });
+    </script>
+}

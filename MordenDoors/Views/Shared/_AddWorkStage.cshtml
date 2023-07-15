@@ -1,0 +1,79 @@
+﻿@model MordenDoors.ViewModels.WorkStageViewModel
+
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+            <div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="card-header-tab card-header-tab-animation card-header">
+                @if (Model == null)
+                {
+                    <div class="card-header-title text-center">
+                        <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                        Create Work Stage
+                    </div>
+                }
+                else
+                {
+                    <div class="card-header-title text-center">
+                        <i class="header-icon lnr-apartment icon-gradient bg-love-kiss">  </i>
+                        Edit Work Stage
+                    </div>
+                }
+            </div>
+            <div class="card-body">
+                @if (Model == null)
+                {
+                    using (Html.BeginForm("CreateWorkStage", "WorkStage", FormMethod.Post, new { role = "form", enctype = "multipart/form-data" }))
+                    {
+                        <div class="form-group row">
+                            @Html.LabelFor(model => Model.StageName, "Name", htmlAttributes: new { @class = "control-label col-md-3 text-right required " })
+                            <div class="col-md-6">
+                                @Html.EditorFor(model => Model.StageName, new { htmlAttributes = new { @class = "form-control", required = "required" } })
+                                @Html.ValidationMessageFor(model => Model.StageName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            @Html.LabelFor(model => Model.StageDescription, "Description", htmlAttributes: new { @class = "control-label col-md-3 text-right required " })
+                            <div class="col-md-6">
+                                @Html.EditorFor(model => Model.StageDescription, new { htmlAttributes = new { @class = "form-control", required = "required" } })
+                                @Html.ValidationMessageFor(model => Model.StageDescription, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group text-center">
+                            <div class="col-md-12">
+                                <input type="submit" value="Create" class="btn bg-grow-early text-white text-center"/>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    using (Html.BeginForm("EditWorkStage", "WorkStage", FormMethod.Post, new { role = "form", enctype = "multipart/form-data" }))
+                    {
+                        <div class="form-group row">
+                            @Html.LabelFor(model => Model.StageName, "Name", htmlAttributes: new { @class = "control-label col-md-3 text-right required " })
+                            <div class="col-md-6">
+                                @Html.EditorFor(model => Model.StageName, new { htmlAttributes = new { @class = "form-control", required = "required" } })
+                                @Html.ValidationMessageFor(model => Model.StageName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            @Html.LabelFor(model => Model.StageDescription, "Description", htmlAttributes: new { @class = "control-label col-md-3 text-right required " })
+                            <div class="col-md-6">
+                                @Html.EditorFor(model => Model.StageDescription, new { htmlAttributes = new { @class = "form-control", required = "required" } })
+                                @Html.ValidationMessageFor(model => Model.StageDescription, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group text-center">
+                            <div class="col-md-12">
+                                <input type="submit" value="Update" class="btn bg-grow-early text-white" />
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+    </div>
+</div>

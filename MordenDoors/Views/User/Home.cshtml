@@ -1,0 +1,326 @@
+﻿@using Microsoft.AspNet.Identity;
+@model IEnumerable<MordenDoors.Models.Customers.CustmerHomePage>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="main-card mb-3 card">
+                <div class="card-header-tab card-header-tab-animation card-header">
+                    <h4><b>Pending Work</b></h4>
+                </div>
+                <div class="card-body">
+                    <table id="tablePendingWork" class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                        <thead class="container" id="Header">
+                            <tr>
+                                <th hidden>
+                                    @Html.DisplayName("OperationId")
+                                </th>
+                                <th hidden>
+                                    @Html.DisplayName("WorkStagePriority")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Customer Name")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Order ID")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Product Name")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("H * W")
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.WorkStage)
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Ordered Quantity")
+                                </th>
+                                <th class="text-center">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Where(x => x.StartTime == null))
+                            {
+                                if (item.EmployeeId == User.Identity.GetUserId() || string.IsNullOrEmpty(item.EmployeeId))
+                                {
+                                    <tr id="pendingWork_@(item.OperationsId)">
+                                        <td class="oprId" hidden>
+                                            @Html.DisplayFor(modelItem => item.OperationsId)
+                                        </td>
+                                        <td class="sort" hidden>
+                                            @Html.DisplayFor(modelItem => item.Sort)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.CustomerName)
+                                        </td>
+                                        <td class="order-id">
+                                            @Html.DisplayFor(modelItem => item.OrderId)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.ProductName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Height) * @Html.DisplayFor(modelItem => item.Width)
+                                        </td>
+                                        <td class="work-stage-id" data-workstageid="@item.WorkStageId">
+                                            @Html.DisplayFor(modelItem => item.WorkStage)
+                                        </td>
+                                        <td class="itemQty">
+                                            @Html.DisplayFor(modelItem => item.OrderQuantity)
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-success" onclick="Get(@item.OperationsId)" @((item.CanGet) ? "" : "disabled")>Get</button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="main-card mb-3 card">
+                <div class="card-header-tab card-header-tab-animation card-header">
+                    <h4><b>Assigned Work</b></h4>
+                </div>
+                <div class="card-body">
+                    <table id="tableAssignedWork" class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                        <thead class="container" id="Header">
+                            <tr>
+                                <th hidden>
+                                    @Html.DisplayName("OperationId")
+                                </th>
+                                <th hidden>
+                                    @Html.DisplayName("WorkStagePriority")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Customer Name")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Order ID")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Product Name")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("H * W")
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.WorkStage)
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Ordered Quantity")
+                                </th>
+                                <th>
+                                    @Html.DisplayName("Quantity Done")
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Where(x => x.StartTime != null && x.EmployeeId == ViewBag.EmployeeId))
+                            {
+                                <tr id="assignedWork_@(item.OperationsId)">
+                                    <td class="oprId" hidden>
+                                        @Html.DisplayFor(modelItem => item.OperationsId)
+                                    </td>
+                                    <td class="sort" hidden>
+                                        @Html.DisplayFor(modelItem => item.Sort)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CustomerName)
+                                    </td>
+                                    <td class="order-id">
+                                        @Html.DisplayFor(modelItem => item.OrderId)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ProductName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Height) * @Html.DisplayFor(modelItem => item.Width)
+                                    </td>
+                                    <td class="work-stage-id" data-workstageid="@item.WorkStageId">
+                                        @Html.DisplayFor(modelItem => item.WorkStage)
+                                    </td>
+                                    <td class="itemQty">
+                                        @Html.DisplayFor(modelItem => item.OrderQuantity)
+                                    </td>
+                                    <td class="quantity-done">
+                                        <div class="col-sm-12">
+                                            @Html.TextBoxFor(modelItem => item.QuantityDone, new { @class = "form-control opr-" + item.OperationsId })
+                                            @Html.TextBoxFor(modelItem => item.Location, new { placeholder = "Location", @class = "form-control opr-" + item.OperationsId })
+                                            <button class="btn btn-success" onclick="Complete(@item.OperationsId)">Complete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    var a = '@TempData["result"]';
+    var b = '@TempData["complete"]';
+    if (a!='') {
+        if (a == 1) {
+            toastr["success"]("Work is Assiged to You")
+        }
+    }
+    if (b!='') {
+        if (b == 1) {
+            toastr["success"]("Work is Completed Successfully")
+        }
+    }
+    $(document).ready(function () {
+        $('#tableAssignedWork').dataTable({
+            "paging": true,
+            "ordering": true,
+            "info": true,
+            "searching": true,
+            "pagingType": "full_numbers",
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "order": [[2, "desc"], [1, "asc"]],
+            "scrollCollapse": true,
+            "responsive": true
+        });
+        $('#tablePendingWork').dataTable({
+            "paging": true,
+            "ordering": true,
+            "info": true,
+            "searching": true,
+            "pagingType": "full_numbers",
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "order": [[2, "desc"], [1, "asc"]],
+            "scrollCollapse": true,
+            "responsive": true
+        });
+
+        $('.CompleteConfirm').on('click', function (event) {
+            event.preventDefault();
+            const url = $(this).attr('href');
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Is product complete?',
+                buttons: {
+                    Yes: function () {
+                        window.location.href = url;
+                    },
+                    No: function () {
+                    }
+                }
+            });
+        })
+        $('.AssignConfirm1').on('click', function (event) {
+            event.preventDefault();
+            const url = $(this).attr('href');
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Are you sure to Assign Product?',
+                buttons: {
+                    Yes: function () {
+                        window.location.href = url;
+                    },
+                    No: function () {
+                    }
+                }
+            });
+        })
+    });
+
+    function Complete(oprId) {
+        var row = $('#assignedWork_' + oprId);
+        var itemQty = parseInt(row.find('.itemQty').text().trim());
+        var orderId = parseInt(row.find('.order-id').text().trim());
+        var workStageId = parseInt(row.find('.work-stage-id').data('workstageid'));
+        var qtyDone = parseInt(row.find('#item_QuantityDone').val().trim());
+        var location = row.find('#item_Location').val().trim();
+
+        if (row.next().hasClass('child')) {
+            qtyDone = qtyDone==0? row.next().find('.opr-' + oprId).val().trim():0;
+            location = (!location) ? row.next().find('#item_Location').val().trim():'';
+        }
+        if (!location) {
+            toastr["error"]("Location field required");
+        }
+        else if (qtyDone == 0) {
+            toastr["error"]("Quantity is greater than zero.")
+        }
+        else if (qtyDone > itemQty) {
+            toastr["error"]("Complete quantity not more than Order quantity.");
+        }
+        else {
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Do you realy want to complete this operation',
+                buttons: {
+                    confirm: function () {
+                        $('.loader').css('display', 'flex');
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("UpdateWorkStatus", "User")',
+                            data: { operationsId: oprId, qytDone: qtyDone, orderId: orderId, workStageId: workStageId, isCompleted: true, location: location },
+                            success: function (response) {
+                                $('.loader').css('display', 'none');
+                                if (response.status == 0) {
+                                    toastr["error"]("Some error occurred please try again");
+                                }
+                                if (response.status == 1) {
+                                    window.location = '/User/Home';
+                                }
+                            },
+                            error: function (data) {
+                                $('.loader').css('display', 'none');
+                                toastr["error"]("error");
+                            }
+                        });
+                    },
+                    cancel: function () {
+                    }
+                }
+            });
+        }
+    }
+    function Get(oprId) {
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Get new Work!',
+            buttons: {
+                confirm: function ()
+                {
+                    var row = $('#pendingWork_' + oprId);
+                    var operationsId = parseInt(row.find('.oprId').text().trim());
+                    var orderId = parseInt(row.find('.order-id').text().trim());
+                    var workStageId = parseInt(row.find('.work-stage-id').data('workstageid'));
+                   $.ajax({
+                       type: "POST",
+                       url: '@Url.Action("UpdateWorkStatus", "User")',
+                       data: { operationsId: operationsId, qytDone: 0, orderId: orderId, workStageId: workStageId, isCompleted: false, location: null },
+                       success: function (response)
+                       {
+                           if (response.status == 0) {
+                               location.reload();
+                               toastr["error"]("Order is already Assign.");
+                           }
+                           if (response.status == 2) {
+                               location.reload();
+                               toastr["error"]("Some error occurred please try again");
+                           }
+                           if (response.status == 1) {
+                               window.location = '/User/Home'
+                           }
+                       },
+                       error: function (xhr, ajaxOptions, thrownError) {
+                           toastr["error"](xhr.status);
+                       }
+                   });
+                },
+                cancel: function () {
+                }
+            }
+        });
+    }
+    </script>

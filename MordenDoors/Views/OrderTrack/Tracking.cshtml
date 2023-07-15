@@ -1,0 +1,161 @@
+﻿@model MordenDoors.ViewModels.OrderTrackViewModel
+
+@{
+    ViewBag.Title = "Track Order";
+}
+<style>
+    table th {
+        text-align: center;
+    }
+
+    .mainTitle {
+        font-size: 16px;
+        font-weight: 600;
+        display: inline-block;
+        margin-right: 20px;
+        margin-top: 5px !important;
+        vertical-align: middle;
+    }
+
+    .mainTitle_span {
+        letter-spacing: 1px;
+        font-size: 12px;
+        color: #acacac;
+    }
+
+    #TrackingID {
+        height: 55px;
+    }
+
+    .btnTrack {
+        height: 54px;
+        width: 100%;
+    }
+
+    .pad-10 {
+        padding: 10px 0px;
+    }
+
+    .content2-header1 {
+        float: left;
+        width: 27%;
+        text-align: center;
+    }
+</style>
+
+<div class="row pad-10 text-center">
+    <div class="card card-body col-md-8 col-md-offset-2 mx-auto">
+        @using (Html.BeginForm("Tracking", "OrderTrack", FormMethod.Post))
+        {
+            <h2 class="mainTitle"> TRACK YOUR ORDER </h2> <span class="mainTitle_span">Now you can track your order easily</span>
+            <div class="row">
+                <div class="col-md-7 col-sm-7">
+                    <div class="form-group">
+                        @Html.TextBoxFor(m => m.TrackingID, new { @class = "form-control", @placeholder = "Enter your Order track ID" })
+                        @Html.ValidationMessageFor(m => m.TrackingID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="col-md-5 col-sm-5">
+                    <div class="form-group">
+                        <button class="btn bg-grow-early text-white btnTrack" type="submit">TRACK YOUR ORDER</button>
+                    </div>
+                </div>
+            </div>
+        }
+        <span class="label label-danger">Please fill Tracking Id</span>
+    </div>
+</div>
+@if (Model != null && Model.OrderItemList != null)
+{
+    <div class="row">
+        <div class="col-md-12 col-lg-12">
+            <div class="main-card mb-3 card">
+                <div class="card-header-tab card-header-tab-animation card-header">
+                    <div class="col-md-2 card-header-title">
+                        <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                        Order No: @Html.DisplayFor(m => m.Id)
+                    </div>
+                    <div class="col-md-10 text-right">
+                        <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                        Total Price: @Html.DisplayFor(m => m.TotalPrice)
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="content2-header1 col-md-6">
+                            <p style="white-space:nowrap"><strong>Tracking ID : </strong> <span>@Html.DisplayFor(m => m.TrackingID)</span></p>
+                        </div>
+                        @*<div class="content2-header1 col-md-4">
+                                <p><strong>Order Status : </strong><span>@Html.DisplayFor(m => m.OrderStatus)</span></p>
+                            </div>*@
+                        <div class="content2-header1 col-md-6">
+                            @{
+                                string date = Convert.ToDateTime(Model.DeliveryTime).ToString("dd/MM/yyyy");
+                            }
+                            <p><strong>Estimated Delivery Date : </strong><span>@Html.DisplayFor(modelItem => date)</span></p>
+                        </div>
+                    </div>
+                    <table class="table table-bordered table-striped text-center" id="tbl_Order" style="margin-top:1%">
+                        <thead style="background:black;color:white;">
+                            <tr>
+                                <th>Delivery Address</th>
+                                @*<th>Product Price</th>*@
+                                <th>Status</th>
+                                @*<th>Stage</th>*@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.OrderItemList)
+                            {
+                                <tr>
+                                    <td>@Html.DisplayFor(modelItem => item.DeliveryAddress)</td>
+                                    @*<td>@Html.DisplayFor(modelItem => item.TotalPrice)</td>*@
+                                    @{ var status = @Html.DisplayFor(modelItem => item.itemStatus);}
+                                    @switch (status.ToString())
+                                    {
+                                        case "Quote":
+                                            <td><span class="badge badge-alternate">@Html.DisplayFor(modelItem => item.itemStatus)</span></td>
+
+                                            break;
+                                        case "InProgress":
+                                            <td><span class="badge badge-warning">@Html.DisplayFor(modelItem => item.itemStatus)</span></td>
+
+                                            break;
+                                        case "Ready":
+                                            <td><span class="badge badge-secondary">@Html.DisplayFor(modelItem => item.itemStatus)</span></td>
+                                            break;
+                                        case "Shipped":
+                                            <td><span class="badge badge-info">@Html.DisplayFor(modelItem => item.itemStatus)</span></td>
+
+                                            break;
+                                        case "Completed":
+                                            <td><span class="badge badge-success">@Html.DisplayFor(modelItem => item.itemStatus)</span></td>
+                                            break;
+                                        default:
+                                            <td><span class="badge">@Html.DisplayFor(modelItem => item.itemStatus)</span></td>
+                                            break;
+                                    }
+                                    @*<td>@Html.DisplayFor(modelItem => item.CurrentItemStage)</td>*@
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    $(document).ready(function () {
+        $('.label-danger').hide();
+    });
+
+    var input = document.getElementById("TrackingID");
+    input.addEventListener("keyup", function (event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            document.getElementsByClassName("btnTrack").click();
+        }
+    });
+</script>

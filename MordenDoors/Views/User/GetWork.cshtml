@@ -1,0 +1,140 @@
+﻿@model IEnumerable<MordenDoors.Models.Customers.CustmerHomePage>
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <h4><b>Pending Work</b></h4>
+
+            </div>
+            <div class="text-right">
+                @Html.ActionLink("Assinged Work", "Home","User", new { @class= "mr-4 mt-2 btn btn-warning" })
+            </div>
+
+            <div class="card-body">
+                <table id="tableInProgress" class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                    <thead class="container" id="Header">
+                        <tr>
+                            <th hidden>
+                                @Html.DisplayName("OperationId")
+                            </th>
+                            <th hidden>
+                                @Html.DisplayName("WorkStagePriority")
+                            </th>
+                            <th>
+                                @Html.DisplayName("Customer Name")
+                            </th>
+                            <th>
+                                @Html.DisplayName("Order ID")
+                            </th>
+                            <th>
+                                @Html.DisplayName("Product Name")
+                            </th>
+                            <th>
+                                @Html.DisplayName("H * W")
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.WorkStage)
+                            </th>
+                            <th>
+                                @Html.DisplayName("Ordered Quantity")
+                            </th>
+                            <th class="text-center">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                        <tr>
+                            <td class="oprId" hidden>
+                                @Html.DisplayFor(modelItem => item.OperationsId)
+                            </td>
+                            <td class="oprId" hidden>
+                                @*@Html.DisplayFor(modelItem => item.Sort)*@
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CustomerName)
+                            </td>
+                            <td class="order-id">
+                                @Html.DisplayFor(modelItem => item.OrderId)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ProductName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Height) * @Html.DisplayFor(modelItem => item.Width)
+                            </td>
+                            <td class="work-stage-id" data-workstageid="@item.WorkStageId">
+                                @Html.DisplayFor(modelItem => item.WorkStage)
+                            </td>
+                            <td class="itemQty">
+                                @Html.DisplayFor(modelItem => item.OrderQuantity)
+                            </td>
+                            <td>
+                                <button class="btn btn-success" onclick="Get(this)" @(item.CanGet ? "" : "disabled")>Get</button>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#tableInProgress').dataTable({
+            "paging": true,
+            "ordering": true,
+            "info": true,
+            "searching": true,
+            "pagingType": "full_numbers",
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "order": [[3, "asc"]],
+            "scrollCollapse": true,
+            "responsive": true
+        });
+    });
+    function Get(e) {        
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Get new Work!',
+            buttons: {
+                confirm: function ()
+                {
+                    var row = jQuery(e).closest("tr");
+                    var operationsId = parseInt(row.find('.oprId').text().trim());
+                    var itemQty = parseInt(row.find('.itemQty').text().trim());
+                    var orderId = parseInt(row.find('.order-id').text().trim());
+                    var workStageId = parseInt(row.find('.work-stage-id').data('workstageid'));
+                   $.ajax({
+                   type: "POST",
+                       url: '@Url.Action("UpdateWorkStatus", "User")',
+                       data: { operationsId: operationsId, qytDone: 0, orderId: orderId, workStageId: workStageId, isCompleted: false },
+                       success: function (response)
+                       {
+                           if (response.status == 0) {
+                               location.reload();
+                               toastr["error"]("Order is already Assign.");
+                           }
+                           if (response.status == 2) { 
+                               location.reload();
+                               toastr["error"]("Some error occurred please try again");
+                           }
+                           if (response.status == 1) {
+                               window.location = '/User/Home'
+                           }
+                       },
+                       error: function (xhr, ajaxOptions, thrownError) {
+                           toastr["error"](xhr.status);
+                       }
+                   });
+                },
+                cancel: function () {
+                }
+            }
+        });
+    };
+</script>
+

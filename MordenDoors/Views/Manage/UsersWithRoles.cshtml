@@ -1,0 +1,132 @@
+﻿@model IEnumerable<MordenDoors.ViewModels.UserInRoleViewModel>
+
+@{
+    ViewBag.Title = "Employee List";
+}
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="col-md-2 card-header-title">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    Employees List
+                </div>
+                <div class="col-md-10 text-right">
+                    <a href="@Url.Action("Register", "Account")" data-toggle="tooltip" title="Add Employee" data-placement="right" class="btn btn-alternate"><span class="fa fa-user-plus"></span> Add Employee</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 col-lg-12">
+                        <table id="table_id" class="table table-responsive-sm table-responsive-md table-responsive-lg table-striped table-hover table-bordered" style="width:100%">
+                            <thead class="container" id="Header">
+                                <tr>
+                                    <th hidden></th>
+                                    <th>
+                                        @Html.DisplayName("Employee Name")
+                                    </th>
+                                    <th>
+                                        @Html.DisplayName("Employee Number")
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Email)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayName("Skills")
+                                    </th>
+                                    <th style="text-align:center">
+                                        Action
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                <tr>
+                                    <td hidden>
+                                        @Html.DisplayFor(modelItem => item.LastUpdateTime)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Username)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.EmployeeNumber)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Email)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Skills)
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.ActionLink("  ", "EditEmployee", "Admin", new { email = item.Email }, new { @class = "fa fa-edit text-success", @title = "Edit" })
+
+                                        @Html.ActionLink("    ", "Detail", "Admin", new { email = item.Email }, new { @class = "fa fa-list text-warning", @style = "margin-left:12px", @title = "Detail" })
+
+                                        @Html.ActionLink("    ", "RemoveEmployee", "Admin", new { email = item.Email }, new { @class = "fa fa-trash text-danger delete-confirm", @style = "margin-left:12px", @title = "Delete" })
+                                    </td>
+                                </tr>
+
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('document').ready(function () {
+
+        bindDatatableOption('#table_id');
+
+        var a = '@TempData["UpdateUser"]';
+            var b = '@TempData["AddEmployee"]';
+            var c = '@TempData["RemoveUser"]';
+            if (a != 0)
+              swal({ title: "Done", text: "Successfully Updated !!!", icon: "success" });
+              if (a != '')
+              {
+                if (a == 0)
+                swal({ title: "Done", text: "An error occurred, please try again later !!!", icon: "warning" });
+              }
+              if (b != '')
+                swal({ title: "Done", text: "Successfully Added !!!", icon: "success" });
+              if (c != 0)
+                swal({ title: "Done", text: "Successfully Remove !!!", icon: "success" });
+              if (c != '') {
+                if (c == 0)
+                    swal({ title: "Done", text: "An error occurred, please try again later !!!", icon: "warning" });
+            }
+    });
+    $('.delete-confirm').on('click', function (event) {
+        event.preventDefault();
+        const url = $(this).attr('href');
+        $.confirm({
+            title: 'Are you sure?',
+            content: 'Employee and its details will be permanently deleted.',
+            buttons: {
+                Yes: function () {
+                    window.location.href = url;
+                },
+                No: function () {
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+    #btnShowModal {
+        border: none;
+        background-color: transparent;
+        color: #337ab7;
+    }
+
+    .modal-content {
+        width: 658px;
+        margin-left: 116px;
+    }
+</style>

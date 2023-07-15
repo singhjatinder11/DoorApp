@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = "ZohoBooks";
+}
+<h2>ZohoBooks</h2>
+<script>
+    toastr["warning"]("Please wait syc data from zoho will come back last page after complete the process.")
+</script>
+@if (ViewData["UserData"] != null)
+{
+    <p>@ViewData["UserData"]</p>
+}

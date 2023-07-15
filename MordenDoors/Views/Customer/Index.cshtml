@@ -1,0 +1,203 @@
+﻿@model MordenDoors.ViewModels.CustomersViewModel
+@{
+    ViewBag.Title = "Customer Pricing";
+}
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    Customer Price
+                </div>
+            </div>
+           
+            <div class="card-body adjust-dropdown-in-table">
+                <div class="cstm-drpdown">
+                    <label>Choose Customer</label>
+                    <select class="selectpicker form-control" title="Select Customers" id="customers" data-live-search="true">
+                        @foreach (var i in Model.Customers)
+                        {
+                            <option data-tokens="@i.Value">@i.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="dvList">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var editingTd;
+        BindCustomers(@TempData["firstCategoryID"]);
+        $(".dvList").show();
+
+        $('#customers').on('change', function () {
+            customerId = (this.selectedOptions[0].dataset.tokens);
+            BindCustomers(customerId);
+            $(".dvList").show();
+        });
+        
+        function BindCustomers(customerId) {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CustomerPrice", "Customer")",
+                data: '{id: "' + customerId + '" }',
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                success: function (response) {
+                    $('.dvList').html('');
+                    $('.dvList').html(response);
+                    editingTd = null;
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
+        }
+
+        var categoryId;
+        var productId;
+        var discount;
+        var customerId;
+        var actualPrice;
+        var discountType;
+        var listIndex;
+
+        function Discount(price) {
+            price = parseFloat(price);
+            actualPrice = parseFloat(actualPrice);
+            if (discountType == "price") {
+                if (price <= actualPrice && price >= 0) {
+                    discount = 100 - ((price / actualPrice) * 100);                    
+                    UpdatePrice();
+                }
+                else {
+                    toastr["error"]("Discount Price can't be Greater then Actual Price or Less then Zero.");
+                    event.stopImmediatePropagation();
+                    finishTdEdit(editingTd.elem, false);
+                }
+            }
+            else {
+                if (price <= 100 && price >= 0) {
+                    discount = price;
+                    UpdatePrice();
+                }
+                else {
+                    toastr["error"]("Discount can't be Greater then 100 or Less then Zero.");
+                    event.stopImmediatePropagation();
+                    finishTdEdit(editingTd.elem, false);
+                }
+            }
+
+        }
+        //bindDatatableOption('#table_id');
+        $(document).on("click", "#table_id .edit-cancel", function (event) {
+            event.stopImmediatePropagation();
+            finishTdEdit(editingTd.elem, false);
+        });
+        $(document).on("click", "#table_id .edit-ok", function (event) {
+            event.stopImmediatePropagation();
+            finishTdEdit(editingTd.elem, true);
+        });
+
+        $(document).on("click", "#table_id td.custPrice, #table_id td.custDiscount", function (event) {
+            //if (!table.contains(target)) return;
+            if ($(this).hasClass("custPrice")) {
+                discountType = "price";
+            }
+            else if ($(this).hasClass("custDiscount")) {
+                discountType = "discount";
+            }
+            var cid = $(this).closest('tr').find('.catId');
+            var pid = $(this).closest('tr').find('.proId');
+            var ap = $(this).closest('tr').find('.aPrice');
+            var customid = $(this).closest('tr').find('.customerId');
+            actualPrice = ap[0].innerHTML.trim();
+            categoryId = cid[0].innerHTML.trim();
+            productId = pid[0].innerHTML.trim();
+            customerId = customid[0].innerHTML;
+            if (editingTd) return; // already editing
+            makeTdEditable(this);
+        });
+        function makeTdEditable(td) {
+            editingTd = {
+                elem: td,
+                data: td.innerHTML
+            };
+            td.classList.add('edit-td'); // td is in edit state, CSS also styles the area inside
+            let textArea = document.createElement('input');
+            textArea.style.width = td.clientWidth + 'px';
+            textArea.style.height = td.clientHeight + 'px';
+            textArea.setAttribute("type", "number");
+            textArea.setAttribute("min", "1");
+            textArea.className = 'edit-area';
+            textArea.value = td.innerHTML.split('<')[0].trim();
+            td.innerHTML = '';
+            td.appendChild(textArea);
+            textArea.focus();
+            td.insertAdjacentHTML("beforeEnd",
+                '<div class="edit-controls"><button class="edit-ok"><i class="fa fa-check text-success"></i></button><button class="edit-cancel"><i class="fa fa-times text-danger"></i></button></div>'
+            );
+        }
+
+        function finishTdEdit(td, isOk) {
+            if (isOk) {
+                var editBtn = '<i class="fa fa-edit"></i>';
+                td.innerHTML = td.firstChild.value + editBtn;
+                var price = td.innerHTML.split('<')[0].trim();
+                Discount(price);
+            } else {
+                td.innerHTML = editingTd.data;
+            }
+            editingTd = null;
+            td.classList.remove('edit-td');
+        }
+
+        function UpdatePrice() {            
+            listIndex = $('.option-item-wrap ul li.active').index();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("UpdatePrice", "Customer")',
+                data: 'customerId=' + customerId + '&productId=' + productId + '&categoryId=' + categoryId + '&price=' + discount,
+                //dataType: "json",
+                success: function (response) {
+                    if (response === 'True') {
+                        BindCustomers(customerId);
+                        swal({ title: "Done", text: "Successfully Updated", icon: "success" })
+                            .then((willOK) => {
+                                if (willOK) {
+                                    checkPreviousCategory(listIndex);
+                                }
+                                });
+                    }
+                },
+                failure: function (response) {
+                    alert("Fail");
+                },
+                error: function (response) {
+                    alert("Error");
+                }
+            });
+        }
+
+        function checkPreviousCategory(index) {
+            $('.option-item-wrap ul li').eq(index).addClass('active');
+            catName = $('.option-item-wrap ul li').eq(index).attr('data-value');
+            if (catName != "All Categories")
+                filterData(catName);
+            else
+                filterData('');
+        }
+        function filterData(catName) {
+            // for filter according to Category Id
+            table.api().column(1).search(catName).draw();
+        }
+    });
+</script>

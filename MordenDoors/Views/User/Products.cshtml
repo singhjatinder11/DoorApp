@@ -1,0 +1,129 @@
+﻿@model MordenDoors.ViewModels.ProductViewModel
+
+@{
+    ViewBag.Title = "Products";
+}
+
+<h2 style="text-align:center"><b>Product List</b></h2>
+<div class="ui-table-wrap">
+    <div class="adjust-dropdowndiv row">
+        <div class="col-lg-9 col-md-6 col-sm-1">
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-11">
+            <select class="form-control selectpicker" id="ddlcategory" data-live-search="true">
+                @foreach (SelectListItem i in Model.Categories)
+                {
+                    if (Model.CategoryId.HasValue && i.Value == Model.CategoryId.Value.ToString())
+                    {
+                        <option selected data-category-id="@i.Value" data-tokens="@i.Text">@i.Text</option>
+                    }
+                    else
+                    {
+                        <option data-category-id="@i.Value" data-tokens="@i.Text">@i.Text</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-12">
+            <table id="table_id" class="table table-condensed table-striped table-hover" cellspacing="0" width="100%">
+                <thead class="container" id="Header">
+                    <tr>
+                        <th style="width:190px;">
+                            Product Name
+                        </th>
+                        <th style="width:200px;">
+                            Product Description
+                        </th>
+                        <th>
+                            Category Name
+                        </th>
+                        <th>
+                            Amount (CAD)
+                        </th>
+                        <th>
+                            SKU
+                        </th>
+                        <th>
+                            Work Stages
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Products)
+                    {
+                        <tr data-product="@item.ProductId">
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ProductName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ProductDescription)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Category.CategoryName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Rate)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.SKU)
+                            </td>
+                            <td>
+                                @string.Join(", ", item.WorkStages)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+@section Scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#table_id').dataTable
+                ({
+                    "paging": true,
+                    "info": true,
+                    "searching": true,
+                    "order": [],
+                    "pagingType": "full_numbers",
+                    "scrollY": "200px",
+                    "columnDefs": [
+                        {
+                            "searchable": false,    // Stops search in the fields
+                            "sorting": true,       // Stops sorting
+                            "orderable": false      // Stops ordering
+                        }
+                    ],
+                    "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]], // Sets up the amount of records to display
+                    "language": {
+                        "search": "_INPUT_",            // Removes the 'Search' field label
+                        "searchPlaceholder": "Search"   // Placeholder for the search box
+                    },
+                    "search": {
+                        "addClass": 'form-control input-lg col-xs-12'
+                    },
+                    "fnDrawCallback": function () {
+                        $("input[type='search']").attr("id", "searchBox");
+                        $('#dialPlanListTable').css('cssText', "margin-top: 0px !important;");
+                        $("select[name='dialPlanListTable_length'], #searchBox").removeClass("input-sm");
+                        $('#searchBox').css("width", "215px").focus();
+                        $('#dialPlanListTable_filter').removeClass('dataTables_filter');
+                    }
+                });
+
+            $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
+
+            $("#ddlcategory").on("change", function () {
+                var value = this.selectedOptions[0].dataset.categoryId === '' ? 0 : this.selectedOptions[0].dataset.categoryId;
+                window.location.href = '/User/Products/' + parseInt(value);
+            });
+        });
+    </script>
+}
+
+

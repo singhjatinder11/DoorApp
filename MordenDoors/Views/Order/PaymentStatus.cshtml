@@ -1,0 +1,133 @@
+﻿@model MordenDoors.ViewModels.OrderPaymentViewModel
+
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title col-md-2">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    Payment Details
+                </div>
+                <div class="col-md-10 text-right">
+                    <a class="btn btn-alternate" href="javascript:void(0);" onclick="AddPayment(@Model.OrderId)" data-toggle="tooltip" title="Add Payment" data-placement="right"><span class="fa fa-plus"></span> Add Payment</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 col-lg-12">
+                        <table id="paymentTable" class="table table-responsive-sm table-responsive-md table-responsive-lg table-bordered table-hover table-striped js-basic-example dataTable">
+                            <thead class="container" id="Header">
+                                <tr>
+                                    <th>
+                                        @Html.DisplayName("Pay Amount(CAD)")
+                                    </th>
+                                    <th>
+                                        @Html.DisplayName("Payment Method")
+                                    </th>
+                                    <th>
+                                        @Html.DisplayName("Update date")
+                                    </th>
+                                    <th>
+                                        @Html.DisplayName("Updated By")
+                                    </th>
+                                    <th>
+                                        @Html.DisplayName("Pending Amount (CAD)")
+                                    </th>
+                                    <th>
+                                        @Html.DisplayName("Bonus")
+                                    </th>
+                                    <th>
+                                        @Html.DisplayName("Comments")
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderPayment)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Payment)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.PaymentMode)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.UpdatedOn)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.UpdatedBy)
+                                        </td>
+                                        <td>
+                                            @if (item.PendingAmount >= 0)
+                                            {
+                                                @Html.DisplayFor(modelItem => item.PendingAmount)
+                                            }
+                                            else
+                                            {
+                                                <span>0.00</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.PendingAmount >= 0)
+                                            {
+                                                <span>0.00</span>
+                                            }
+                                            else
+                                            {
+                                                @item.PendingAmount.ToString().Replace("-", string.Empty)
+                                            }
+
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Comments)
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="container-fluid row">
+                    <div class="col-md-6 pull-left">
+                        @Html.ActionLink("Back to Order List", "Index", "Order", null, new { @class = "btn bg-midnight-bloom text-white" })
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <h4><span class="badge badge-success">Total Amount - <b>@Model.OrderTotalAmount</b></span></h4>
+                    </div>
+                </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        bindDatatableOption('#paymentTable');
+        bindDatatableOption('#tableInProgress');
+    });
+    
+    function AddPayment(orderId) {
+        var url = '/Order/CreatePayment';
+        //var header = '';
+        //header += "<div class='modal-header'>" +
+        //    "<button type='button' class='close' data-dismiss='modal'>&times;</button>" +
+        //    "<h4 class='modal-title text-center'>Add Payment</h4></div>";
+        $('#MordenModal .modal-body').load(url, { orderId: orderId });
+        //$('#MordenModal .modal-content').html(header);
+        $("#MordenModal").modal("show");
+    }
+
+    var a = '@TempData["done"]';
+
+        if (a != 0)
+            swal({ title: "Payment Done", text: "Payment Add Successfully", icon: "success" });
+        if (a != '')
+        {
+            if (a == 0)
+                swal({ title: "Error", text: "An error occurred, please try again later", icon: "warning" });
+        }
+</script>
+
+

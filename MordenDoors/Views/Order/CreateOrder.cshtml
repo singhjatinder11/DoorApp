@@ -1,0 +1,2124 @@
+﻿@model MordenDoors.ViewModels.OrderViewModel
+
+
+<style>
+    legend {
+        font-size: 20px !important;
+        color: brown;
+    }
+
+    thead,
+    tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    tbody {
+        display: block;
+        /*overflow-y: auto;*/
+        table-layout: fixed;
+        /*max-height: 250px;*/
+    }
+
+    .pointer {
+        cursor: pointer;
+    }
+
+    a.additem {
+        color: #27C46B;
+    }
+
+    a.edititem {
+        color: #FFC107;
+    }
+
+    a.deleteitem {
+        color: #E34724;
+    }
+
+    /* Switch button */
+
+    .btn-default.btn-on.active,
+    .btn-default.btn-off.active {
+        background-color: #5BB75B;
+        color: white;
+    }
+
+    #tbl_order > tbody > tr > td {
+        vertical-align: middle;
+    }
+
+    .side-panel {
+        height: calc(100vh - 100px);
+        overflow: hidden;
+        overflow-y: auto;
+    }
+
+        .side-panel li {
+            margin: 10px;
+        }
+
+    tr.hide-table-padding td {
+        padding: 0;
+    }
+
+    .expand-button {
+        position: relative;
+    }
+
+    .table-layout {
+        text-align: center;
+        border: 1px solid black;
+        border-collapse: collapse;
+        font-family: "Trebuchet MS";
+        margin: 0 auto 0;
+    }
+
+        .table-layout td, .table-layout th {
+            border: 1px solid grey;
+            padding: 5px 5px 0;
+        }
+
+        .table-layout td {
+            text-align: left;
+        }
+
+    .selected {
+        color: red;
+        background-color: lightblue!important;
+    }
+
+</style>
+
+<script src="~/Scripts/bootstrap-select.min.js"></script>
+<link href="~/Content/bootstrap-select.min.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card px-3">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title text-center w-100">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    <h2 id="lblHeaderOrder" class="font-weight-bold w-100">New Quote Request</h2>
+                    <div class="form-group float-right mt-3">
+                        @Html.Label("Status", null, htmlAttributes: new { @class = "control-label" })
+                        <div class="btn-group" id="status" data-toggle="buttons">
+                            <label id="lblQuote" onclick="addQuoteHeader()" class="btn btn-default btn-on btn-sm active">
+                                <input id="rdoQuote" type="radio" value="1" name="orderStatus" checked="checked">QUOTE
+                            </label>
+                            <label id="lblOrder" onclick="addOrderHeader()" class="btn btn-default btn-off btn-sm ">
+                                <input id="rdoOrder" type="radio" value="2" name="orderStatus">Order
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <div class="form-row">
+                    <div class="col-sm-3 col-md-3 col-lg-2">
+                        <div id="lstProduct">
+
+                        </div>
+
+                    </div>
+                    <div class="col-sm-12 col-md-12 col-lg-12">
+                        <div class="form-row">
+                            @*<div class="col-md-12">
+                    <div class="pull-right">
+                        <button id="btnSave" type="button" class="btn bg-grow-early text-white add-new" onclick="SaveOrderItem()"><i class="fa fa-save" data-placement="top" data-toggle="tooltip" data-title="Save Order"></i> Save</button>
+                    </div>
+                </div>*@
+                            <div class="col-md-5">
+                                <div class="form-group" id="customer">
+                                    @Html.Label("Choose Customer", htmlAttributes: new { @class = "control-label required" })
+                                    <select class="form-control" onchange="getcustomertax(this);" data-live-search="true">
+                                        <option data-customer-id="-1" data-tokens="Select Customer">Select Customer</option>
+                                        @foreach (SelectListItem i in Model.CustomerList)
+                                        {
+                                            <option data-customer-id="@i.Value" data-tokens="@i.Text">@i.Text</option>
+                                        }
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="col-md-7">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <label>Balance</label>
+                                            </div>
+                                            <div class="col-sm-12">
+                                                @Html.TextBox("Balance", new SelectList(string.Empty, "Value", "Text"), " ", new { @class = "form-control", @readonly = "readonly" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <label>CreditLimit</label>
+                                            </div>
+                                            <div class="col-sm-12">
+                                                @Html.TextBox("CreditLimit", new SelectList(string.Empty, "Value", "Text"), " ", new { @class = "form-control", @readonly = "readonly" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="col-md-12">
+                    <legend>Details</legend>
+                </div>*@
+                            <div class="col-md-5">
+                                <fieldset>
+
+
+                                    <!--<div>
+                    <label>Balance</label>
+                     @Html.TextBox("Balance", new SelectList(string.Empty, "Value", "Text"), " ", new { style = "width:250px", @class = "form-control",  @readonly = "readonly" })
+                     <label>CreditLimit</label>
+                     @Html.TextBox("CreditLimit", new SelectList(string.Empty, "Value", "Text"), " ", new { style = "width:250px", @class = "form-control", @readonly = "readonly" })-->
+                                    @*@Html.ValidationMessageFor(model => model.orders, "", new { @class = "text-danger" })*@
+                                    <!--</div>-->
+
+
+                                    <div class="form-group">
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label>Customer Address</label>
+                                                <textarea id="txtaddress" style="height:170px" class="form-control"></textarea>
+
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Delivery Address<span style="color:red"> *</span></label>
+                                                <textarea id="txtaddress2" style="height:170px" class="form-control" validation="true"></textarea>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    @*<div class="form-group">
+
+                        </div>*@
+                                </fieldset>
+
+                            </div>
+
+
+                            <div class="col-md-7 col-lg-7">
+                                <fieldset>
+
+
+                                    @*<div class="form-group">
+                            @Html.LabelFor(model => model.orders.CretaedOn, "Order Creation Date", htmlAttributes: new { @class = "control-label" })
+                            @Html.TextBoxFor(model => model.orders.CretaedOn, new { @class = "form-control", @readonly = "readonly", @type = "Text", id = "CretaedOn" })
+                            @Html.ValidationMessageFor(model => model.orders.CretaedOn, "", new { @class = "text-danger" })
+                        </div>*@
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.DueDate, "Estimated Delivery Date", htmlAttributes: new { @class = "control-label required" })
+                                                @Html.TextBoxFor(model => model.DueDate, new { @onchange = "dropdownShow()", @class = "form-control", placeholder = "Enter Drop-off date here...", @type = "date", id = "OrderDeliveryDate", @min = DateTime.Now, @max = "2050-12-31" })
+                                                @Html.ValidationMessageFor(model => model.DueDate, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.orders.PO, "PO", htmlAttributes: new { @class = "control-label " })
+                                                @Html.TextBoxFor(model => model.orders.PO, new { @class = "form-control", placeholder = "PO", @type = "text", id = "txtpo" })
+                                                @*@Html.ValidationMessageFor(model => model.orders.PO, "", new { @class = "text-danger" })*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        @*@Html.LabelFor(model => model.orders.Job, "JOB", htmlAttributes: new { @class = "control-label" })*@
+                                        @Html.TextBoxFor(model => model.orders.Job, new { style = "display: none;", @class = "form-control", placeholder = "JOB", @type = "text", id = "txtjob" })
+                                        @*@Html.ValidationMessageFor(model => model.orders.Job, "", new { @class = "text-danger" })*@
+                                    </div>
+
+                                    <div class="form-group" style="margin-top: -15px">
+                                        @Html.LabelFor(model => model.orders.Comments, "Comments", htmlAttributes: new { @class = "control-label" })
+                                        @Html.TextAreaFor(model => model.orders.Comments, 3, 15, htmlAttributes: new { @class = "form-control", id = "orderComment" })
+                                        @*@Html.ValidationMessageFor(model => model.Comments, "", new { @class = "text-danger" })*@
+                                    </div>
+
+
+                                </fieldset>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="option-item-wrap">
+                            <ul id="categry" class="dropdown">
+                                @foreach (var cat in Model.CategoryList)
+                                {
+                                    <li>
+
+                                        <button class="dropdown-toggle" type="button" data-toggle="dropdown" data-id="@cat.Value" aria-haspopup="true" aria-expanded="false" onclick="selectcategory(this)" id="Door" onmouseup="getprice()">
+                                            @cat.Text
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            @foreach (var subcat in Model.Prodcutlist.Where(s => s.CategoryId.ToString() == cat.Value))
+                                            {
+                                                <a class="@string.Concat("dropdown-item ","cls_"+cat.Value)" href="#" data-price="@subcat.Rate" data-unit="@subcat.Units" data-unitid="@subcat.UnitId" onclick="active(this,@cat.Value);" data-main="@cat.Text" data-value="@subcat.ProductName" data-value1="@subcat.ProductId">@string.Concat(subcat.ProductName + " (" + subcat.Rate + " Per/" + @subcat.Units + ")")</a>
+
+                                            }
+                                        </div>
+
+                                    </li>
+                                }
+
+                            </ul>
+                        </div>
+                    </div>
+
+                    <table id="tbl_order1" class="table table-responsive text-center add-order-table-qty-wrap">
+                        <thead>
+                            <tr style="font-size:15px">
+                                <td colspan="9" class="text-left">
+                                    <span class="d-inline-block">Show in :</span>
+                                    <ul class="d-inline-block p-0">
+                                        <li class="list-inline-item"><input type="radio" onchange="calamount2(this)" name="rdo_pick"  class="Inches" /> Imperial(<span class="text-danger">in</span>)</li>
+                                        <li class="list-inline-item"><input type="radio" name="rdo_pick"  onchange="calamount2(this)" class="Millimeter" /> Metrics(<span class="text-danger">mm</span>)</li>
+                                    </ul>
+
+                                </td>
+
+                                @if (true)
+                                {
+                                    @*<th class="Calculation">Height</th>*@
+                                    @*<th class="Calculation" style="display:none"></th>
+            <th class="Calculation" style="display:none"></th>*@
+                                    @*<th class="Calculation">Width</th>*@
+                                    @*<th class="Calculation" style="display:none"></th>
+            <th class="Calculation" style="display:none"></th>*@
+                                }
+
+
+                                @*<th style="width:150px;">Unit</th>
+        <th style="display:none">Price</th>
+        <th style="display:none">Unit</th>
+        <th style="display:none">Custom Price</th>
+
+
+        <th style="width:150px">Total</th>
+        <th style="display:none">Price</th>
+        <th style="display:none">Unit</th>
+        <th style="display:none">Custom Price</th>
+        <th style="width:150px;">Total Price/sqft</th>
+        <th style="width:100px;">Action</th>*@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="row-2" data-row="2">
+                                @*<td style="width:62px">
+            <input type="checkbox" checked="checked" onchange="checktblerow(this)" class="chkedit" />
+        </td>*@
+                                @*<td>
+            <input type="text" disabled multiple class="productName form-control" />
+        </td>*@
+                                @*<td hidden>
+            <input type="text" disabled multiple class="description form-control" />
+        </td>*@
+
+
+                                <td class="input-inline-wrap">
+                                    <span class="d-inline-block">Width</span>
+                                    <ul class="d-inline-block p-0">
+                                        <li class="list-inline-item">
+                                            <input type="text" class="Width form-control" onchange="calamount2(this)" />
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <select class="Width1 form-control" id="SelectWidthParameter1" onchange="calamount2(this)" name="StudentGender">
+                                                <option>0</option>
+                                                <option>1</option>
+                                                <option>3</option>
+                                                <option>5</option>
+                                                <option>7</option>
+                                                <option>9</option>
+                                                <option>11</option>
+                                                <option>13</option>
+                                                <option>15</option>
+
+                                            </select>
+                                        </li>
+                                        <li class="list-inline-item">/</li>
+                                        <li class="list-inline-item">
+                                            <select class="Width2 form-control" id="SelectWidthParameter2" onchange="calamount2(this)" name="StudentGender">
+                                                <option>0</option>
+                                                <option>2</option>
+                                                <option>4</option>
+                                                <option>8</option>
+                                                <option>16</option>
+
+                                            </select>
+                                        </li>
+                                    </ul>
+                                </td>
+
+                                <td class="input-inline-wrap">
+                                    <span class="d-inline-block">
+                                        Height
+                                    </span>
+                                    <ul class="d-inline-block p-0">
+                                        <li class="list-inline-item">
+                                            <input type="text" class="Height form-control" onchange="calamount2(this)">
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <select class="hgh1 form-control" id="SelectHeightParameter1" onchange="calamount2(this)" name="StudentGender">
+                                                <option>0</option>
+                                                <option>1</option>
+                                                <option>3</option>
+                                                <option>5</option>
+                                                <option>7</option>
+                                                <option>9</option>
+                                                <option>11</option>
+                                                <option>13</option>
+                                                <option>15</option>
+                                            </select>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            /
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <select class="hgh2 form-control" id="SelectHeightParameter2" onchange="calamount2(this)" name="StudentGender">
+                                                <option>0</option>
+                                                <option>2</option>
+                                                <option>4</option>
+                                                <option>8</option>
+                                                <option>16</option>
+
+                                            </select>
+                                        </li>
+                                    </ul>
+                                </td>
+                                @*<td style="width:150px;">
+            <select class="form-control" id="SelectUnit" onchange="calamount(this)" name="StudentGender">
+                <option>Select Unit</option>
+                <option>Inches</option>
+                <option>Millimeter</option>
+            </select>
+        </td>*@
+                                <td style="width:80px;" class="input-inline-wrap">
+                                    <span class="d-inline-block">
+                                        QTY
+                                    </span>
+
+                                    <ul class="d-inline-block p-0">
+                                        <li class="list-inline-item">
+                                            <input type="number" class="quntity form-control" onchange="calamount2(this)" />
+                                        </li>
+
+                                        <li style="display:none">
+                                            <input type="text" value="0" disabled class="Price form-control" />
+                                        </li>
+                                        <li style="display:none">
+                                            <input type="text" value="0" disabled class="unit form-control" />
+                                        </li>
+                                        <li style="display:none">
+                                            <input type="text" value="0" onchange="calamount2(this)" class="CustomPrice form-control" />
+                                        </li>
+                                    </ul>
+                                <td style="width:150px;" class="right-border-line disabled-input">
+                                    <input type="text" class="pricepersquarefeet form-control" />
+                                    <label><small>Price Per square feet</small></label>
+                                    @*<input type="text" class="totalsqf form-control" />*@
+                                </td>
+                                <td style="width:150px;" class=" right-border-line disabled-input">
+                                    <input type="text" class="priceperdoor form-control" />
+                                    <label><small>Price Per Door</small></label>
+                                    @*<input type="text" class="totalsqf form-control" />*@
+                                </td>
+
+                                <td style="width:150px;" class="disabled-input">
+                                    <input type="text" class="SubTotal form-control" />
+                                    <label><small>Subtotal</small></label>
+                                    @*<input type="text" class="totalsqf form-control" />*@
+                                </td>
+
+
+
+                                <td style="display:none">
+                                    <input type="text" value="0" onchange="calamount2(this)" disabled class="Price form-control" />
+                                </td>
+                                <td style="display:none">
+                                    <input type="text" value="0" onchange="calamount2(this)" disabled class="unit form-control" />
+                                </td>
+                                <td style="display:none">
+                                    <input type="text" value="0" onchange="calamount2(this)" class="CustomPrice form-control" />
+
+                                </td>
+                                <td style="display:none">
+                                    <input type="text" value="0" onchange="calamount2(this)" class="getunit form-control" />
+
+                                </td>
+                                @*<td style="width:150px;">
+            <input type="text" disabled class="TotalPrice form-control" />
+
+        </td>*@
+                                @*<td style="width:100px;">
+            <a class="edititem pointer" data-toggle="tooltip" title="Edit" style="display:none;"><i class="fa fa-edit"></i></a>
+            <a class="deleteitem pointer" data-toggle="tooltip" title="Delete"><i class="fa fa-trash text-danger"></i></a>
+        </td>*@
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+
+
+
+
+
+
+                    <input id="Button1" type="button" value="Add To Order" onclick="addnitemdata()" class="btn bg-grow-early text-white add-new" />
+                    <div class="col-md-12">
+                        <fieldset>
+                            <legend>Add Order Items</legend>
+                            <div id="div_orderTable">
+                                <span class="pull-left" id="errmsg" style="color:red"></span>
+                                @*<span class="pull-right">
+                        <i class="fa fa-plus fa-2x text-success" title="Add New" onclick="" id="PlusSign" data-placement="left" data-toggle="tooltip" data-title="Comment"></i>
+                    </span>*@
+                                <table id="tbl_order" class="table table-striped table-responsive text-center">
+                                    <thead>
+                                        <tr  style="font-size:15px">
+                                            <th style="width:62px" scope="col">Select</th>
+                                          @*//  <th scope="col">#</th>*@
+                                            <th>Product Name</th>
+                                            <th hidden>Description</th>
+                                            <th style="width:80px;">Quantity</th>
+                                            @if (true)
+                                            {
+                                                <th class="Calculation">Height</th>
+                                                @*<th class="Calculation" style="display:none"></th>
+                                    <th class="Calculation" style="display:none"></th>*@
+                                                <th class="Calculation">Width</th>
+                                                @*<th class="Calculation" style="display:none"></th>
+                                    <th class="Calculation" style="display:none"></th>*@
+                                            }
+
+
+                                            <th style="width:150px;">Unit</th>
+                                            <th style="display:none">Price</th>
+                                            <th style="display:none">Unit</th>
+                                            <th style="display:none">Custom Price</th>
+
+
+                                            <th style="width:150px">Total Measurement</th>
+                                            <th style="display:none">Price</th>
+                                            <th style="display:none">Unit</th>
+                                            <th style="display:none">Custom Price</th>
+                                            <th style="width:150px;">Total Price</th>
+                                            <th style="width:100px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr  id="row-1" class="selectionrow2" style="display:none" data-row="1">
+
+
+                                            <td onclick="selectionrow(this);" class="rowId" style="width:62px">
+                                                
+                                                    <input type="checkbox" checked="checked" onchange="checktblerow(this)" class="chkedit" />
+                                                    <div class="icon-class d-inline-block">
+                                                        <i class="fa fa-minus active" aria-hidden="true" style="cursor:pointer" onclick="iconclick(this)"></i>
+                                                    </div>
+                                            </td>
+                                            <td onclick="selectionrow(this);">
+                                                <input type="text" disabled multiple class="productName form-control" />
+                                            </td>
+                                            <td hidden>
+                                                <input type="text" disabled multiple class="description form-control" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="width:80px;">
+                                                <input type="number" disabled class="quntity form-control" onchange="calamount(this)" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" class="input-inline-wrap">
+                                                <input type="text" disabled class="Height form-control" onchange="calamount(this)">
+                                                <select class="hgh1 form-control" disabled id="SelectHeightParameter1" onchange="calamount(this)" name="StudentGender">
+                                                    <option>0</option>
+                                                    <option>1</option>
+                                                    <option>3</option>
+                                                    <option>5</option>
+                                                    <option>7</option>
+                                                    <option>9</option>
+                                                    <option>11</option>
+                                                    <option>13</option>
+                                                    <option>15</option>
+                                                </select>
+                                                /
+                                                <select class="hgh2 form-control" disabled id="SelectHeightParameter2" onchange="calamount(this)" name="StudentGender">
+                                                    <option>0</option>
+                                                    <option>2</option>
+                                                    <option>4</option>
+                                                    <option>8</option>
+                                                    <option>16</option>
+
+                                                </select>
+                                            </td>
+                                            <td onclick="selectionrow(this);" class="input-inline-wrap">
+                                                <input type="text" disabled class="Width form-control" onchange="calamount(this)" />
+                                                <select class="Width1 form-control" disabled id="SelectWidthParameter1" onchange="calamount(this)" name="StudentGender">
+                                                    <option>0</option>
+                                                    <option>1</option>
+                                                    <option>3</option>
+                                                    <option>5</option>
+                                                    <option>7</option>
+                                                    <option>9</option>
+                                                    <option>11</option>
+                                                    <option>13</option>
+                                                    <option>15</option>
+
+                                                </select>
+                                                /
+                                                <select class="Width2 form-control" disabled id="SelectWidthParameter2" onchange="calamount(this)" name="StudentGender">
+                                                    <option>0</option>
+                                                    <option>2</option>
+                                                    <option>4</option>
+                                                    <option>8</option>
+                                                    <option>16</option>
+
+                                                </select>
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="width:150px;">
+                                                <select class="form-control" id="SelectUnit" disabled onchange="calamount(this)" name="StudentGender">
+                                                    <option>Select Unit</option>
+                                                    <option>Inches</option>
+                                                    <option>Millimeter</option>
+                                                </select>
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="display:none">
+                                                <input type="text" value="0" disabled class="Price form-control" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="display:none">
+                                                <input type="text" value="0" disabled class="unit form-control" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="display:none">
+                                                <input type="text" value="0" onchange="calamount(this)" class="CustomPrice form-control" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="width:150px;">
+                                                <input type="text" disabled class="totalsqf form-control" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="display:none">
+                                                <input type="text" value="0" disabled class="Price form-control" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="display:none">
+                                                <input type="text" value="0" disabled class="unit form-control" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="display:none">
+                                                <input type="text" value="0" onchange="calamount(this)" class="CustomPrice form-control" />
+                                            </td>
+                                            <td onclick="selectionrow(this);" style="width:150px;">
+                                                <input type="text" disabled class="TotalPrice form-control" />
+                                            </td>
+                                            <td style="width:100px;">
+                                                <a class="edititem pointer" data-toggle="tooltip" title="Edit" style="display:none;"><i class="fa fa-edit"></i></a>
+                                                <a class="deleteitem pointer" data-toggle="tooltip" title="Delete"><i class="fa fa-trash text-danger"></i></a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="pull-right">
+                            <button id="btnSave" type="button" class="btn bg-grow-early text-white add-new" data-placement="top" data-toggle="tooltip" data-title="Save Order" onclick="SaveOrderItem()"><i class="fa fa-save"></i> Save</button>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-7 offset-md-5">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            @Html.LabelFor(model => model.orders.GST, "GST", htmlAttributes: new { @class = "control-label" })
+                                            @Html.TextBoxFor(model => model.orders.GST, new { @class = "form-control", @type = "number", @readonly = "readonly", Value = "0.00" })
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            @Html.LabelFor(model => model.orders.PST, "PST", htmlAttributes: new { @class = "control-label" })
+                                            @Html.TextBoxFor(model => model.orders.PST, new { @class = "form-control", @type = "number", @readonly = "readonly", Value = "0.00" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            @Html.LabelFor(model => model.orders.CustomePrice, "Customer discount ", htmlAttributes: new { @class = "control-label" })
+                                            @Html.TextBoxFor(model => model.orders.CustomePrice, new { @onchange = "gettotalamount()", @class = "form-control", id = "CustomePrice", @onkeyup = "gettotalamount()", @type = "number", @min = "0" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 ">
+                                        <div class="form-group">
+                                            @Html.LabelFor(model => model.orders.Payableamount, "Amount", htmlAttributes: new { @class = "control-label" })
+                                            @Html.TextBoxFor(model => model.orders.Payableamount, new { @onchange = "gettotalamount()", @class = "form-control", placeholder = "Amount", @type = "text", id = "txtPayableamount", @readonly = "readonly" })
+                                            @Html.ValidationMessageFor(model => model.orders.Payableamount, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mt-4">
+                        <div class="row">
+                            <div class="col-md-7 offset-md-5">
+                                <div class="row">
+                                    <div class="col-md-6 form-group">
+                                        <h4 class="text-success"><b>Total Amount</b></h4>
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                        @Html.TextBoxFor(model => model.orders.TotalAmount, new { @class = "form-control", placeholder = "TotalAmount", @type = "text", id = "txttotalAmount", @readonly = "readonly" })
+                                        @Html.ValidationMessageFor(model => model.orders.TotalAmount, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal -->
+                    <div class="modal fade" id="myModal" role="dialog">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">Work Stages</h4>
+                                </div>
+                                <div class="modal-body">
+                                    @Html.Label("Work Stage", htmlAttributes: new { @class = "control-label col-md-4" })
+                                    <select id="workStages" class="form-control selectpicker" multiple data-live-search="true" style="width:90px">
+                                    </select>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button id="save" class="btn btn-width bkgrnd-cyan save-details" type="button" name="save-details">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    // Used global variables
+    var detailItems = [];
+    var orderItems = [];
+    var orderItemComments = [];
+    //BindCategoryChange(1);
+    //BindProductChange(1);
+    //CalculateAmount(1);
+    var categoryId;
+    var productId;
+    var currentindex;
+    var discount;
+    var description = '';
+    var productName = '';
+    var price = '0';
+    var id = 0;
+    var IsitemAddedProperly = true;
+    var categoryName = '';
+    var firstcategory = '';
+
+
+    function addnitemdata() {
+        //parent('li').parent('ul').parent('td').parent('tr')
+        
+        var res = $("#tbl_order1 tbody tr").find('td');
+        var quantity = $(res[2]).find('input').val();
+        // if (unittype == 1) {
+        var hgh0 = $(res[1]).find('.Height').val();
+        var hgh1 = $(res[1]).find('.hgh1').val();
+        var hgh2 = $(res[1]).find('.hgh2').val();
+        //    unit = $(res[2]).find('.description').val();
+
+        var width0 = $(res[0]).find('.Width').val();
+        var width1 = $(res[0]).find('.Width1').val();
+        var width2 = $(res[0]).find('.Width2').val();
+        var td = $('#tbl_order1 > thead > tr').find('td');
+        var unittype = td.find('ul li').find('input[name=rdo_pick]:checked').attr('class');
+        var totalmeasurement = $(res[6]).find('.Price').val();
+        var totalPrice = $(res[7]).find('.unit').val();
+        var unit = $(res[2]).find('').val();
+
+
+        $("#tbl_order tbody tr").each(function (index, Value) {
+            var td = $(Value).find('td');
+            if ($(Value).hasClass('selected')) {
+                $(td[4]).find('.Height').val(hgh0);
+                $(td[4]).find('.hgh1').val(hgh1);
+                $(td[4]).find('.hgh2').val(hgh2);
+                $(td[5]).find('.Width').val(width0);
+                $(td[5]).find('.Width1').val(width1);
+                $(td[5]).find('.Width2').val(width2);
+                $(td[6]).find('#SelectUnit').val(unittype);
+                $(td[2]).find('input').val(unit);
+                $(td[3]).find('input').val(quantity);
+                calamount();
+                $(td[2]).find('input').attr('data-id', id);
+                $(td[2]).find('input').attr('title', description);
+                $(td[10]).find('input').val(totalmeasurement);
+                $(td[14]).find('input').val(totalPrice);
+
+              
+                $(res[2]).find('input').val(0);
+                // if (unittype == 1) {
+                $(res[1]).find('.Height').val(0);
+                $(res[1]).find('.hgh1').val(0);
+               $(res[1]).find('.hgh2').val(0);;
+
+                $(res[0]).find('.Width').val(0);
+                $(res[0]).find('.Width1').val(0);
+                 $(res[0]).find('.Width2').val(0);
+               $(res[6]).find('.Price').val(0);
+                $(res[7]).find('.unit').val(0);
+                $(res[3]).find('input').val(0);
+                $(res[4]).find('input').val(0);
+                $(res[5]).find('input').val(0);
+
+
+
+
+
+                
+
+            }
+        });
+    }
+
+    //Ger Current DateAndTime
+    $(document).ready(function () {
+
+
+
+
+
+
+        $('#lstProduct').hide();
+        $('.dropdown').hide();
+
+    });
+    //<input type="text" name="frmDateReg" required id="frmDate" value="getDate()">
+    //End
+
+    // Check quantity value should be greater than zero
+    function checknumber(num) {
+        var x = $(num).val();
+        if (x.length > 0) {
+        if (x < 1) {
+            toastr["warning"]("Please enter valid quantity and must quantity greater then zero.")
+            $(num).val('');
+            return false;
+        }
+        }
+    }
+
+    //// ready function
+    //$(document).ready(function () {
+    //    $('#categry').hide();
+    //    $('#optionAppear').show();
+    //    $('#lstProduct').hide();
+    //    $('.dropdown').hide();
+    //});
+
+    //select category(s) & bind in description text
+
+    function selectcategory(drp) {
+
+        categoryName = '';
+        //categoryID = '';
+
+        categoryName = drp.innerText;
+        //  categoryID = drp.dataset.id;
+
+        //$("#categry li").each(function (index, value) {
+        //    if (index == 0) {
+        //        productName = $(value).find('div').find('.active').html();
+        //    }
+        //    var heder = $(value).find('button').html();
+        //    var selectedname = $(value).find('div').find('.active').html();
+        //    //if ($(value).find('select option:selected').val() != '0') {
+
+        //   // description = description + " " + heder + "(" + selectedname + "),";
+        //    //$(td).parent('td').parent('tr').find('.active').html();
+
+        //});
+
+
+        $("#tbl_order tbody tr").each(function (index, Value) {
+            var td = $(Value).find('td');
+            if ($(td[0]).find(".chkedit").is(':checked')) {
+                //$(td[1]).find('input').val(firstcategory);
+               // $(td[2]).find('input').val(unit);
+                //$(td[2]).find('input').attr('data-id', id);
+                //$(td[2]).find('input').attr('title', description);
+                if (parseInt(id) == -1) {
+                    $(td[2]).parents('tr').find('input').val(description);
+                    calamount(description);
+                }
+
+            }
+        });
+        Recalamount();
+    }
+    var CustomPrice2 = 0;
+    var productName = '';
+    var ProductId = '';
+    var unit = '';
+    var Price = 0;
+
+    function active(btn, catValue) {
+
+        firstcategory = $(btn).attr('data-main');
+        var td = $('#tbl_order > tbody > tr').find('td');
+        var ischeckedtd = $('#tbl_order > tbody > tr').find('td').find('.chkedit').is(':checked');
+     //var checkbox = $(td[0]).find('.chkedit').filter(':checked').length < 1;
+        //var checkbox2 = $(td[0]).find('.chkedit').filter(':checked').length == null;
+        //checkbox = $(res[0]).filter(':checked').length < 1;
+        //checkbox2 = $(res[0]).filter(':checked').length = 0;
+
+        unit = $(btn).attr('data-unit');
+
+        Price = $(btn).attr('data-price');
+
+        if (categoryName != firstcategory.match(/Door.*/) && ischeckedtd == true)   {
+
+            $(".cls_" + catValue).find('active');
+
+            productName = $(btn).attr('data-value');
+
+            ProductId = $(btn).attr('data-value1');
+
+            CustomPrice2 = $(btn).addClass('active').attr('data-price');
+
+            firstcategory = $("#categry li").find('button').first()[0].innerText;
+
+            Subcategory = categoryName + " - " + productName;
+            firstcategory = Subcategory;
+            categoryName = firstcategory;
+            var trrow = $('#tbl_order').find('#row-1');
+
+            $("#tbl_order tbody tr").each(function (index, value) {
+
+                var tr = value;
+                var td = $('#tbl_order > tbody > tr').find('td');
+                $(td[2]).find('input').val(unit);
+
+
+                if ($(tr).find('.chkedit').is(':checked')) {
+
+                    var row = $(trrow).html();
+                    var newclass ="subrow"+ $(value).attr('id').split('-')[1];
+                    $('#tbl_order > tbody > tr').eq(index).after("<tr class='" + newclass+"'>" + row + "</tr>");
+                 //   $("#tbl_order > tbody > tr").find().addClass("ct-active");
+                    var td = $('#tbl_order > tbody > tr').eq(index + 1).find('td');
+                    $(td[1]).find('input').val(categoryName);
+                    $(td[2]).find('input').val(unit);
+                    $(td[1]).find('input').attr('data-id', ProductId);
+                    $(td[0]).find('.chkedit').prop("checked", false);
+                    $(td[0]).find('i').hide();
+                    $(td[0]).find('.chkedit').hide();
+                    $(td[0]).find('.icon-class').hide();
+
+                    // each
+                    if (unit == unit.match("each")) {
+                        $(td[4]).find('.Height').attr("disabled", "disabled");
+                        $(td[4]).find('.hgh1').attr("disabled", "disabled");
+                        $(td[4]).find('.hgh2').attr("disabled", "disabled");
+                        $(td[5]).find('.Width').attr("disabled", "disabled");
+                        $(td[5]).find('.Width1').attr("disabled", "disabled");
+                        $(td[5]).find('.Width2').attr("disabled", "disabled");
+                        $(td[6]).find('#SelectUnit').attr("disabled", true);
+                        $(td[10]).find('.totalsqf').attr("disabled", true);
+                        calamount();
+                    }
+                    //linear feet
+                    if (unit == unit.match("linearFeet")) {
+                        $(td[10]).find('.totalsqf').attr("disabled", true);
+                        $(td[4]).find('.Height').attr("disabled", "disabled");
+                        $(td[4]).find('.hgh1').attr("disabled", "disabled");
+                        $(td[4]).find('.hgh2').attr("disabled", "disabled");
+                        $(td[5]).find('.Width').attr("disabled", "disabled");
+                        $(td[5]).find('.Width1').attr("disabled", "disabled");
+                        $(td[5]).find('.Width2').attr("disabled", "disabled");
+                        $(td[6]).find('#SelectUnit').attr("disabled", true);
+                        calamount();
+                    }
+                    if (unit == unit.match("sqft")) {
+                        $(td[10]).find('.totalsqf').attr("disabled", true);
+                        $(td[4]).find('.Height').attr("disabled", "disabled");
+                        $(td[4]).find('.hgh1').attr("disabled", "disabled");
+                        $(td[4]).find('.hgh2').attr("disabled", "disabled");
+                        $(td[5]).find('.Width').attr("disabled", "disabled");
+                        $(td[5]).find('.Width1').attr("disabled", "disabled");
+                        $(td[5]).find('.Width2').attr("disabled", "disabled");
+                        $(td[6]).find('#SelectUnit').attr("disabled", true);
+                        calamount();
+                    }
+
+                }
+            });
+
+        }
+
+
+
+        else if (categoryName != firstcategory.match(/Door.*/) && ischeckedtd == false) {
+
+            $(".cls_" + catValue).removeClass('active');
+        //$(btn).addClass('active');
+        productName = $(btn).attr('data-value');
+        ProductId = $(btn).attr('data-value1');
+        //var pp = $(".productName").val();
+        //$(".productName").val(pp + + productName2)
+        //$(btn).addClass('active') + pp;
+        CustomPrice2 = $(btn).addClass('active').attr('data-price');
+
+        firstcategory = $("#categry li").find('button').first()[0].innerText;
+
+
+            addOrderrow();
+
+        firstcategory = categoryName + " - " + productName;
+        categoryName = firstcategory;
+
+        $("#tbl_order tbody tr").each(function (index, Value) {
+            var td = $(Value).find('td');
+            $(td[2]).find('input').val(unit);
+            if ($(td[0]).find(".chkedit").is(':checked')) {
+                $(td[1]).find('input').val(categoryName);
+
+                // $(td[2]).append(unit);
+                $(td[1]).find('input').attr('data-id', ProductId);
+            }
+        });
+        }
+
+
+        else {
+
+            $(".cls_" + catValue).removeClass('active');
+            //$(btn).addClass('active');
+            productName = $(btn).attr('data-value');
+            ProductId = $(btn).attr('data-value1');
+            //var pp = $(".productName").val();
+            //$(".productName").val(pp + + productName2)
+            //$(btn).addClass('active') + pp;
+            CustomPrice2 = $(btn).addClass('active').attr('data-price');
+
+            firstcategory = $("#categry li").find('button').first()[0].innerText;
+
+
+            addOrderrow();
+            firstcategory = categoryName + " - " + productName;
+            categoryName = firstcategory;
+
+            $("#tbl_order tbody tr").each(function (index, Value) {
+                var td = $(Value).find('td');
+                $(td[2]).find('input').val(unit);
+                if ($(td[0]).find(".chkedit").is(':checked')) {
+                    $(td[1]).find('input').val(categoryName);
+
+                    // $(td[2]).append(unit);
+                    $(td[1]).find('input').attr('data-id', ProductId);
+                }
+            });
+            $("#PlusSign").hide();
+        }
+
+            //
+            //    addOrderrow();
+            //   // Subcategory = $("#categry li").find('button').first().innerText + " " + productName;
+
+            //    selectcategory(Subcategory);
+            //}
+            //else
+            //{
+
+            //}
+
+            //productName2 = $(btn).attr('data-value');
+            // $(".cls_" + catValue + productName).removeClass('active');
+            //  var pp = $(".productName").val();
+            //  $(".productName").val(pp + + productName2);
+            //
+
+       // selectcategory(categoryName);
+        //document.getElementbyId(res[0]).disabled = true;
+
+
+    }
+
+    //getting price for category/product
+    function getprice() {
+    $("#categry li").each(function (index, value) {
+        if ($(value).find('select option:selected').val() != '0') {
+            Recalamount();
+        }
+    });
+    }
+
+    function selectionrow(tr) {
+
+        $("#tbl_order tbody tr").removeClass('selected');
+
+        $(tr).parent('tr').addClass('selected')
+
+        var res = $(tr).parent('li').parent('ul').parent('td').parent('tr').find('td');
+        var quantity = $(res[2]).find('input').val();
+        // if (unittype == 1) {
+        var hgh0 = $(res[1]).find('.Height').val();
+        var hgh1 = $(res[1]).find('.hgh1').val();
+        var hgh2 = $(res[1]).find('.hgh2').val();
+        //    unit = $(res[2]).find('.description').val();
+
+        var width0 = $(res[0]).find('.Width').val();
+        var width1 = $(res[0]).find('.Width1').val();
+        var width2 = $(res[0]).find('.Width2').val();
+        var td = $('#tbl_order1 > thead > tr').find('td');
+        var unittype = td.find('ul li').find('input[name=rdo_pick]:checked').attr('class');
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+    //getting custom price for category/product
+    function getCustomPrice(catid, product) {
+        return new Promise(function (resolved, reject) {
+            var customerId = $("#customer").find(':selected').data('customer-id');
+            var data = {
+                'customerId': customerId,
+                'productId': product,
+                'categoryId': catid
+	            }
+	            $.ajax({
+		            type: "POST",
+		            url: '@Url.Action("getcustomerprice", "Order")',
+		            data: JSON.stringify(data),
+		            contentType: "application/json; charset=utf-8",
+		            dataType: "json",
+                    success: function (data) {
+
+                        $('.Price').val(data.CustomPrice);
+			            resolved(data);
+		            },
+		            error: function (response) {
+                        toastr["error"]("Get customer price API issue")
+		            }
+	            });
+})
+    }
+    function iconclick(tb) {
+        var subrow = "subrow" + $(tb).parent('div').parent('td').parent('tr').attr('id').split('-')[1];
+        if ($(tb).hasClass('fa-minus')) {
+            $("." + subrow).fadeOut('slow');
+           
+           $(tb).removeClass("fa-minus");
+             $(tb).addClass("fa-plus");
+        }
+        else {
+            $("." + subrow).fadeIn('slow');
+            $(tb).removeClass("fa-plus");
+            $(tb).addClass("fa-minus");
+        }
+    }
+    // Checked table row & bind price
+    function checktblerow(tb) {
+        resetdrpdown();
+        var subrow = "subrow" + $(tb).parent('td').parent('tr').attr('id').split('-')[1];
+
+        var checkboxlist = $("#tbl_order tbody tr td").find('input[type="checkbox"]:checked');
+
+       // var checkboxlist2 = $("#tbl_order tbody tr td").find('input[type="checkbox"]');
+      //  var checkboxlist2 =$('[type="checkbox"]:not(:checked)').closest('tr').hide()
+        //if ($(tb).is(":checked")) {
+        //    $("." + subrow).fadeIn('slow');
+        //    $("." + $(tb).prev().attr('class') +" i").removeClass("fa-minus");
+        //    $("." +$(tb).prev().attr('class') +" i").addClass("fa-plus");
+        //    }
+        //else {
+        //    $("." + subrow).fadeOut('slow');
+        //    $("." +$(tb).prev().attr('class') + " i").removeClass("fa-plus");
+        //    $("." +$(tb).prev().attr('class') + " i").addClass("fa-minus");
+        //    }
+
+
+        $("#tbl_order tbody tr").each(function (index, Value) {
+            var td = $(Value).find('td');
+
+
+            if (checkboxlist.length > 1) {
+                $(td[0]).find('.chkedit').prop('checked', false);
+            } else {
+                if (tb) {
+                    $(this).prop('checked', false);
+                }
+                else {
+                    $(this).not(this).prop('checked', true);
+                }
+            }
+
+        });
+        if (checkboxlist.length > 1) {
+
+            $(tb).prop('checked', true);
+        }
+        bindcatagery(tb);
+    }
+
+
+    //function collapseOrder(dtl) {
+    //    var subrow = "subrow" + $(dtl).parent('td').parent('tr').attr('id').split('-')[1];
+    //    debugger
+    //    if ($(dtl).hasClass("fa-minus")) {
+    //        $("." + subrow).fadeIn('slow');
+    //        $(dtl).removeClass("fa-minus");
+    //        $(dtl).addClass("fa-plus");
+    //    }
+    //    else {
+    //        $("." + subrow).fadeOut('slow');
+    //        $("." + subrow).fadeIn('slow');
+    //        $(dtl).removeClass("fa-plus");
+    //        $(dtl).addClass("fa-minus");
+    //    }
+    //}
+
+
+
+      //   var checkboxes = $(this).parent().siblings("td").children(":checkbox");
+    $('.Inches').click(function () {
+
+        if ($(this).prop('checked', true));
+        $('.Millimeter').prop('checked', false)
+    });
+
+
+    $('.Millimeter').click(function () {
+
+
+        if ($(this).prop('checked', true));
+        $('.Inches').prop('checked', false)
+    });
+
+
+
+
+
+    //Reset dropdown list(s)
+    function resetdrpdown() {
+    $("#categry li").each(function () {
+        $(this).find('select').prop('selectedIndex', 0);
+    });
+}
+
+    // Bind category & sub category in dropdown listing
+    function bindcatagery(td) {
+        var drpdat = $(td).parent('td').parent('tr').find('td');
+        var dt = $(drpdat).addClass('active');
+        // var dt = $(drpdat[2]).find('input').val();
+        var drplist = dt.split(',');
+        $(drplist).each(function (index, value) {
+            if (value != "") {
+                var gethd = value.split('(');
+                $("#categry li").each(function () {
+                    var heder = $(this).find('p').html();
+                    var slvl = gethd[1].slice(0, -1);
+                    if (heder == gethd[0].trim()) {
+                        $(this).find('select option[data-value="' + slvl + '"]').prop('selected', true);
+                    }
+                });
+            }
+        });
+    }
+    var hgh = 0;
+    var width = 0;
+
+
+
+
+    function calamount2(txt) {
+        var res2 = $(txt).parent('td').parent('tr').find('td');
+        var res = $(txt).parent('li').parent('ul').parent('td').parent('tr').find('td');
+        var quantity = $(res[2]).find('input').val();
+        // if (unittype == 1) {
+        var hgh0 = $(res[1]).find('.Height').val();
+        var hgh1 = $(res[1]).find('.hgh1').val();
+        var hgh2 = $(res[1]).find('.hgh2').val();
+        //    unit = $(res[2]).find('.description').val();
+       
+      //  var price = $(value).find('select option:selected').attr('data-price');
+        var div1 = (hgh1 / hgh2);
+        if (isNaN(div1)) {
+            div1 = "0";
+        }
+
+
+        else {
+            div1 = div1;
+        }
+
+        hgh = parseFloat(div1) + parseFloat(hgh0);
+
+        var width0 = $(res[0]).find('.Width').val();
+        var width1 = $(res[0]).find('.Width1').val();
+        var width2 = $(res[0]).find('.Width2').val();
+
+        var div2 = (width1 / width2);
+
+        if (isNaN(div2)) {
+            div2 = "0";
+        }
+
+        else {
+            div2 = div2;
+        }
+        width = parseFloat(div2) + parseFloat(width0);
+
+        var td = $('#tbl_order1 > thead > tr').find('td');
+        var unittype = td.find('ul li').find('input[name=rdo_pick]:checked').attr('class');
+
+
+       // var unittype = $(res[0]).find('#rdo_pick option:selected').val();
+
+     //   unit = $(res[8]).find('input').val(unit);
+
+        if (hgh != "" && width != "" && quantity != "" && unittype == 'Inches' && unit == unit.match("sqft")) {
+
+
+            var area = parseFloat(hgh) * parseFloat(width);
+            var sqf = area / 144;
+            var priceperdoor = sqf * CustomPrice2;
+            var totalPrice = sqf * CustomPrice2 * quantity;
+
+
+            //  quantity = totalarea;
+
+            if (sqf <= 1) {
+
+                $(res[3]).find('.pricepersquarefeet').val(Price);
+                $(res[4]).find('.priceperdoor').val(CustomPrice2);
+                $(res[5]).find('.SubTotal').val(totalPrice);
+                $(res[6]).find('.Price').val(sqf * quantity);
+                $(res[7]).find('.unit').val(totalPrice);
+                gettotalamount();
+               
+
+               
+            }
+            else {
+                //TotalSquareFeet = totalarea;
+                //  $(".totalsqf").val(totalarea);
+                var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2) * quantity;
+                //TotalPrice = totalPrice;
+                $(res[3]).find('.pricepersquarefeet').val(price);
+                $(res[4]).find('.priceperdoor').val(priceperdoor);
+                $(res[5]).find('.SubTotal').val(totalPrice);
+                $(res[6]).find('.Price').val(sqf);
+                $(res[7]).find('.unit').val(totalPrice);
+                gettotalamount();
+               
+            }
+        }
+        else if (hgh != "" && width != "" && quantity != "" && unittype == 'Inches' && unit == unit.match("linearFeet")) {
+
+            var area = parseFloat(hgh) * quantity;
+
+            var lnf = area / 12;
+
+            var totalPrice = sqf * CustomPrice2;
+            //  quantity = totalarea;
+
+            if (lnf <= 1) {
+
+                $(res[3]).find('.pricepersquarefeet').val(Price);
+                $(res[4]).find('.priceperdoor').val(CustomPrice2);
+                $(res[5]).find('.SubTotal').val(CustomPrice2);
+                $(res[6]).find('.Price').val(sqf * quantity);
+                $(res[7]).find('.unit').val(totalPrice);
+              
+                gettotalamount();
+              
+            }
+            else {
+
+                //TotalSquareFeet = totalarea;
+                //  $(".totalsqf").val(totalarea);
+                var totalPrice = parseFloat(lnf) * parseFloat(CustomPrice2);
+                //TotalPrice = totalPrice;
+                $(res[3]).find('.pricepersquarefeet').val(Price);
+                $(res[4]).find('.priceperdoor').val(totalPrice);
+                $(res[5]).find('.SubTotal').val(totalPrice);
+                $(res[6]).find('.Price').val(sqf * quantity);
+                $(res[7]).find('.TotalPrice').val(totalPrice);
+               
+                gettotalamount();
+              
+            }
+        }
+
+        //TotalSquareFeet = totalarea;
+        //  $(".totalsqf").val(totalarea);
+        //  var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2) * quantity;
+        //TotalPrice = totalPrice;
+        //$(res[10]).find('.totalsqf').val(lnf);
+        //$(res[14]).find('.TotalPrice').val(totalPrice);
+        //gettotalamount();
+        // $(".TotalPrice").val(totalPrice);
+
+
+        else if (hgh != "" && width != "" && quantity != "" && unittype == 'Millimeter' && unit == unit.match("sqft")) {
+            var area = parseFloat(hgh) * parseFloat(width);
+            // var totalarea = area * quantity;
+            var sqf = area / 92903;
+            var priceperdoor = sqf * parseFloat(CustomPrice2);
+            var totalPrice = sqf * quantity * parseFloat(CustomPrice2);
+            //   quantity = totalarea;
+            if (sqf <= 1) {
+
+                $(res[3]).find('.pricepersquarefeet').val(Price);
+                $(res[4]).find('.priceperdoor').val(CustomPrice2);
+                $(res[5]).find('.SubTotal').val(CustomPrice2);
+                $(res[6]).find('.Price').val(sqf * quantity);
+                $(res[7]).find('.TotalPrice').val(totalPrice);
+               
+                gettotalamount();
+               
+            }
+            else {
+                //TotalSquareFeet = totalarea;
+                //  $(".totalsqf").val(totalarea);
+                var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2) * quantity;
+                //TotalPrice = totalPrice;
+                $(res[3]).find('.pricepersquarefeet').val(Price);
+                $(res[4]).find('.priceperdoor').val(priceperdoor);
+                $(res[5]).find('.SubTotal').val(totalPrice);
+                $(res[6]).find('.Price').val(sqf * quantity);
+                $(res[7]).find('.TotalPrice').val(totalPrice);
+                gettotalamount();
+               
+            }
+        }
+        else if (hgh != "" && width != "" && quantity != "" && unittype == 'Millimeter' && unit == unit.match("linearFeet")) {
+
+            var area = parseFloat(hgh) * quantity;
+            // var totalarea = area * quantity;
+            var sqf = area / 304.8;
+
+            var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2);
+            //   quantity = totalarea;
+            if (sqf <= 1) {
+
+                $(res[3]).find('.pricepersquarefeet').val(Price);
+                $(res[4]).find('.priceperdoor').val(priceperdoor);
+                $(res[5]).find('.SubTotal').val(totalPrice);
+               
+
+                $(res[6]).find('.Price').val(sqf * quantity);
+                $(res[7]).find('.TotalPrice').val(totalPrice);
+                gettotalamount();
+             
+            }
+            else {
+                //TotalSquareFeet = totalarea;
+                //  $(".totalsqf").val(totalarea);
+                var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2);
+                //TotalPrice = totalPrice;
+                $(res[3]).find('.pricepersquarefeet').val(Price);
+                $(res[4]).find('.priceperdoor').val(totalPrice);
+                $(res[5]).find('.SubTotal').val(totalPrice);
+                $(res[6]).find('.Price').val(sqf);
+                $(res[7]).find('.TotalPrice').val(totalPrice);
+                gettotalamount();
+           
+            }
+        }
+        else {
+
+            var totalPrice = quantity * parseFloat(CustomPrice2);
+            if ($(res[4]).find('.Height').attr("disabled") == "disabled") {
+                $(res[3]).find('.pricepersquarefeet').val(Price);
+                $(res[4]).find('.priceperdoor').val(CustomPrice2);
+                $(res[5]).find('.SubTotal').val(totalPrice);
+                $(res[6]).find('.Price').val(quantity);
+                $(res[7]).find('.TotalPrice').val(totalPrice);
+                gettotalamount();
+
+        }
+   }
+}
+
+
+
+
+
+
+
+    //Calculate amount of order(s)
+    function calamount(txt) {
+        // var customPrice = $('button').find('data-price').find('.active').html();
+        
+        var res = $(txt).parent('td').parent('tr').find('td');
+        var quantity = $(res[3]).find('input').val();
+        // if (unittype == 1) {
+        var hgh0 = $(res[4]).find('.Height').val();
+        var hgh1 = $(res[4]).find('.hgh1').val();
+        var hgh2 = $(res[4]).find('.hgh2').val();
+    //    unit = $(res[2]).find('.description').val();
+
+        var div1 = (hgh1 / hgh2);
+        if (isNaN(div1)) {
+            div1 = "0";
+        }
+        else {
+        div1 = div1;
+        }
+
+        hgh = parseFloat(div1) + parseFloat(hgh0);
+
+        var width0 = $(res[5]).find('.Width').val();
+        var width1 = $(res[5]).find('.Width1').val();
+        var width2 = $(res[5]).find('.Width2').val();
+
+        var div2 = (width1 / width2);
+
+        if (isNaN(div2)) {
+            div2 = "0";
+        }
+
+        else {
+            div2 = div2;
+        }
+        width = parseFloat(div2) + parseFloat(width0);
+        // var quantity = $(selectedtd[3]).find('input').val();
+       
+        var unittype = $(res[6]).find('#SelectUnit option:selected').val();
+        //var TotalSquareFeet = $(res[7]).find('input').val();
+        //var TotalPrice = $(res[8]).find('input').val();
+        if (unittype != "Select Unit") {
+
+            unit = $(res[2]).find('input').val();
+            if (hgh != "" && width != "" && quantity != "" && unittype == 'Inches' && unit == unit.match("sqft")) {
+
+                var area = parseFloat(hgh) * parseFloat(width);
+                var sqf = area / 144;
+                var totalPrice = sqf * quantity * CustomPrice2;
+                //  quantity = totalarea;
+                if (sqf <= 1) {
+                    $(res[10]).find('.totalsqf').val(sqf * quantity);
+                    $(res[14]).find('.TotalPrice').val(CustomPrice2 * quantity);
+                    gettotalamount();
+                    //  $(".totalsqf").val(totalarea);
+                    //   $(".TotalPrice").val(CustomPrice2 * quantity);
+                }
+                else {
+                    //TotalSquareFeet = totalarea;
+                    //  $(".totalsqf").val(totalarea);
+                    var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2) * quantity;
+                    //TotalPrice = totalPrice;
+                    $(res[10]).find('.totalsqf').val(sqf * quantity);
+                    $(res[14]).find('.TotalPrice').val(totalPrice);
+                    gettotalamount();
+                    //  $(".TotalPrice").val(totalPrice);
+                }
+            }
+            else if (hgh != "" && width != "" && quantity != "" && unittype == 'Inches' && unit == unit.match("linearFeet")) {
+
+                var area = parseFloat(hgh) * quantity;
+
+                var lnf = area / 12;
+
+                var totalPrice = sqf * quantity * CustomPrice2;
+                //  quantity = totalarea;
+
+                if (lnf <= 1) {
+
+                    $(res[10]).find('.totalsqf').val(lnf * quantity);
+                    $(res[14]).find('.TotalPrice').val(CustomPrice2 * quantity);
+                    gettotalamount();
+                    //  $(".totalsqf").val(totalarea);
+                    //   $(".TotalPrice").val(CustomPrice2 * quantity);
+                }
+                else {
+
+                    //TotalSquareFeet = totalarea;
+                    //  $(".totalsqf").val(totalarea);
+                    var totalPrice = parseFloat(lnf) * parseFloat(CustomPrice2) * quantity;
+                    //TotalPrice = totalPrice;
+                    $(res[10]).find('.totalsqf').val(lnf * quantity);
+                    $(res[14]).find('.TotalPrice').val(totalPrice);
+                    gettotalamount();
+                    //  $(".TotalPrice").val(totalPrice);
+                }
+            }
+
+            //TotalSquareFeet = totalarea;
+            //  $(".totalsqf").val(totalarea);
+            //  var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2) * quantity;
+            //TotalPrice = totalPrice;
+            //$(res[10]).find('.totalsqf').val(lnf);
+            //$(res[14]).find('.TotalPrice').val(totalPrice);
+            //gettotalamount();
+            // $(".TotalPrice").val(totalPrice);
+
+
+            else if (hgh != "" && width != "" && quantity != "" && unittype == 'Millimeter' && unit == unit.match("sqft")) {
+                var area = parseFloat(hgh) * parseFloat(width);
+                // var totalarea = area * quantity;
+                var sqf = area / 92903;
+                //   quantity = totalarea;
+                if (sqf <= 1) {
+
+                    $(res[10]).find('.totalsqf').val(sqf * quantity);
+                    $(res[14]).find('.TotalPrice').val(CustomPrice2 * quantity);
+                    gettotalamount();
+                    //  $(".totalsqf").val(totalarea);
+                    //  $(".TotalPrice").val(CustomPrice2 * quantity)
+                }
+                else {
+                    //TotalSquareFeet = totalarea;
+                    //  $(".totalsqf").val(totalarea);
+                    var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2) * quantity;
+                    //TotalPrice = totalPrice;
+                    $(res[10]).find('.totalsqf').val(sqf);
+                    $(res[14]).find('.TotalPrice').val(totalPrice);
+                    gettotalamount();
+                    //  $(".TotalPrice").val(totalPrice);
+                }
+            }
+            else if (hgh != "" && width != "" && quantity != "" && unittype == 'Millimeter' && unit == unit.match("linearFeet")) {
+
+                var area = parseFloat(hgh) * quantity;
+                // var totalarea = area * quantity;
+                var sqf = area / 304.8;
+                //   quantity = totalarea;
+                if (sqf <= 1) {
+
+                    $(res[10]).find('.totalsqf').val(sqf * quantity);
+                    $(res[14]).find('.TotalPrice').val(CustomPrice2 * quantity);
+                    gettotalamount();
+                    //  $(".totalsqf").val(totalarea);
+                    //  $(".TotalPrice").val(CustomPrice2 * quantity)
+                }
+                else {
+                    //TotalSquareFeet = totalarea;
+                    //  $(".totalsqf").val(totalarea);
+                    var totalPrice = parseFloat(sqf) * parseFloat(CustomPrice2) * quantity;
+                    //TotalPrice = totalPrice;
+                    $(res[10]).find('.totalsqf').val(sqf * quantity);
+                    $(res[14]).find('.TotalPrice').val(totalPrice);
+                    gettotalamount();
+                    //  $(".TotalPrice").val(totalPrice);
+                }
+            }
+
+
+
+            else {
+
+
+                $(res[10]).find('.totalsqf').val('0');
+                $(res[14]).find('.TotalPrice').val('0');
+
+            }
+
+        }
+
+        else {
+            if ($(res[4]).find('.Height').attr("disabled") == "disabled") {
+                $(res[10]).find('.totalsqf').val(quantity);
+                $(res[14]).find('.TotalPrice').val(CustomPrice2 * quantity);
+                gettotalamount();
+
+            }
+        }
+    }
+
+
+
+            //    $(res[8]).find('input').val(quantity);
+            //} else {
+            //    quantity = 0;
+            //    $(res[8]).find('input').val(quantity);
+            //}
+            //
+            //if (hgh != "" && width != "" && quantity != "") {
+            //    $(res[7]).find('input').val(linearlength);
+            //} else {
+            //    quantity = 0;
+            //    $(res[7]).find('input').val(linearlength);
+            //}
+
+
+      //  var customPrice = $(res[9]).find('input').val();
+       // var totalPrice = parseFloat(quantity) * parseFloat(customPrice);
+        // $(res[9]).find('input').val(totalPrice);
+        //Recalamount();
+     // get data for selected row of table
+    function getselectedtd() {
+        return new Promise(function (resolved, reject) {
+            $("#tbl_order > tbody > tr").each(function (index, Value) {
+                var td = $(Value).find('td');
+                if ($(td[0]).find(".chkedit").is(':checked')) {
+                    resolved(td);
+                }
+            });
+        });
+    }
+
+    // Re-calculate amount of order(s)
+    function Recalamount(txt) {
+       var totalPrice = 0;
+        var selectedtd;
+        var price = 0;
+        $("#tbl_order tbody tr").each(function (index, Value) {
+            var td = $(Value).find('td');
+            if ($(td[0]).find(".chkedit").is(':checked')) {
+                selectedtd = td;
+            }
+        });
+
+        $("#categry li").each(function (index, value) {
+            if ($(value).find('select option:selected').val() != '0') {
+                var quantity = $(selectedtd[3]).find('input').val();
+               var unittype = $(value).find('select option:selected').attr('data-unitid');
+                var price = $(value).find('select option:selected').attr('data-price');
+                var hgh = $(selectedtd[4]).find('input').val();
+                var width = $(selectedtd[5]).find('input').val();
+                var area = parseFloat(hgh) * parseFloat(width);
+                //if (unittype == 1) {
+                //    quantity = (area * quantity);
+                //    totalPrice = totalPrice + (parseFloat(quantity) * parseFloat(price));
+                //} else {
+                //    totalPrice = totalPrice + (parseFloat(quantity) * parseFloat(price));
+                //}
+            }
+        });
+        var ggg = parseFloat(isNaN(totalPrice) ? 0 : totalPrice);
+      //  $(unit).find('input').val(unit.toFixed(2));
+        gettotalamount();
+    }
+
+    // Add dynamic heading of Order
+    function addQuoteHeader() {
+        $("#lblHeaderOrder").html("");
+        $("#lblHeaderOrder").html("New Quote Request");
+    }
+    function addOrderHeader() {
+        $("#lblHeaderOrder").html("");
+        $("#lblHeaderOrder").html("New Sales Order");
+    }
+
+
+    function dropdownShow() {
+        $('.dropdown').show();}
+
+
+    function appendrow() {
+
+
+
+
+
+    }
+
+
+    // Add a clone row
+    function addOrderrow() {
+
+        resetdrpdown();
+        $('.dropdown').show();
+        $('#PlusSign').hide();
+        //$('#lstProduct').show();
+     //  $('#optionAppear').show();
+
+        $("#tbl_order tbody tr").each(function (index, Value) {
+            var td = $(Value).find('td');
+            $(td[0]).find(".chkedit").prop('checked', false);
+        });
+        var detailItem = {
+            // detail data
+            customerID: $("#customer").find(':selected').data('customer-id'),
+            OrderDDate: $("#OrderDeliveryDate").val(),
+            orderComment: $("#orderComment").val(),
+            orderStatus: $('input[name=orderStatus]:checked').val(),
+            // delivery address data
+            Address1: $("#txtbxAddressLine1").val(),
+            Address2: $("#txtbxAddressLine2").val(),
+            Country: $("#txtbxCountry").val(),
+            City: $("#txtbxCity").val(),
+            Pincode: $("#txtbxPincode").val(),
+        }
+        if (detailItem.customerID != "-1" && detailItem.OrderDDate != "" && detailItem.Address1 != "" && detailItem.Country != "" && detailItem.City != "" & detailItem.Pincode !=
+            "") {
+            var row = $('#tbl_order').find('tbody tr:first');
+
+            var item = $('#tbl_order').find('tbody tr').length + 1;
+            var preRow = item - 1;
+            $('#tbl_order').append('<tr id="row-' + item + '" data-row="' + item + '">' + row[0].innerHTML.trim() + '</tr>');
+            $('#categry').show();
+            $('#optionAppear').hide();
+            $('#row-' + item + '').find('.category').focus();
+            $('#row-' + item + '').find('.totalsqf').attr('disabled', 'disabled');
+            $("#workStages").html('').selectpicker('refresh');
+            currentindex = $('#tbl_order tbody tr').length - 1;
+        }
+        else
+        {
+            toastr["warning"]("Please fill above details properly.")
+        }
+    }
+
+
+
+
+    // Delete a current row
+    $("#tbl_order").on("click", '.deleteitem', function () {
+            var that = this;
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Do you really want to delete this order item?',
+                buttons: {
+                    Yes: function () {
+                        var rowNumber = $(that).parents("tr").attr("data-row");
+                        $("#tbl_order tbody tr").eq(rowNumber - 1).remove();
+                        ReOrderTrs();
+                        resetdrpdown();
+                    },
+                    No: function () { }
+                }
+            });
+    });
+
+    // For re-ordering all rows after deleting
+    function ReOrderTrs() {
+    $("#tbl_order tbody tr").each(function (index) {
+    $(this).attr("id", "row-" + (index + 1));
+    $(this).attr("data-row", (index + 1));
+    });
+    }
+
+    // save items for a current row
+    function saveitems() {
+    orderItems = [];
+    $("#tbl_order tbody tr").each(function (index, Value) {
+    if (index != 0) {
+        var td = $(Value).find('td');
+        if ($(td[1]).find('input').val() == "") {
+            toastr["error"]("Atleast select one product.")
+            $(td[1]).find('input').focus();
+            IsitemAddedProperly= false;
+        }
+       else if ($(td[3]).find('input').val() == "") {
+            toastr["error"]("Please fill quantity.")
+            $(td[3]).find('input').focus();
+            IsitemAddedProperly= false;
+        }
+        else if ($(td[4]).find('input').val() == "" || $(td[5]).find('input').val() == "")
+        {
+            if ($(td[4]).find('.Height').attr("disabled") == "disabled" || $(td[5]).find('.Width').attr("disabled") == "disabled")
+            {
+                var item = {
+                    RowId: index,
+                    ProductId: $(td[1]).find('input').attr('data-id'),
+                    workstage: [],
+                    Quantity: $(td[3]).find('input').val(),
+                    Height: 0,
+                    Width: 0,
+                    Price: 0,
+                    CustomPrice: 0,
+                    ItemComment: $(td[1]).find('.productName').val(),
+                    TotalPrice: $(td[14]).find('input').val(),
+                    TotalWeight: $(td[10]).find('input').val(),
+                    Unit: $(td[2]).find('input').val(),
+                    UnitType:"Select Unit"
+                };
+                orderItems.push(item);
+                IsitemAddedProperly = true;
+            }
+            else
+            {
+                if ($(td[5]).find('input').val() == "")
+                {
+                    toastr["error"]("Please fill width.")
+                    $(td[5]).find('input').focus();
+                    IsitemAddedProperly = false;
+                }
+                else {
+                    toastr["error"]("Please fill height.")
+                    $(td[4]).find('input').focus();
+                    IsitemAddedProperly = false;
+                }
+            }
+        }
+
+        else {
+
+            var item = {
+            RowId: index,
+            ProductId: $(td[1]).find('input').attr('data-id'),
+            workstage: [],
+            Quantity: $(td[3]).find('input').val(),
+            Height: hgh,
+            Width: width,
+            Price: 0,
+            CustomPrice: 0,
+            ItemComment: $(td[1]).find('.productName').val(),
+            TotalPrice: $(td[14]).find('input').val(),
+            TotalWeight: $(td[10]).find('input').val(),
+            UnitType: $(td[6]).find('#SelectUnit option:selected').val(),
+            Unit: $(td[2]).find('input').val(),
+        };
+            orderItems.push(item);
+            IsitemAddedProperly= true;
+            }
+    }
+    });
+    }
+
+
+    // Get total amount for per order
+    function gettotalamount() {
+        var totalamount = 0;
+        $("#tbl_order tbody tr").each(function (index, Value) {
+            if (index != 0) {
+                var td = $(Value).find('td');
+                totalamount = totalamount + parseFloat($(td[14]).find('input').val());
+            }
+        });
+        var gst = 0;
+        if ($("#orders_GST").val() != '' || parseFloat($("#orders_GST").val())>0) {
+            gst = (totalamount * parseFloat($("#orders_GST").val()))/100;
+
+        }
+        var pst = 0;
+         if ($("#orders_PST").val() != ''|| parseFloat($("#orders_PST").val())>0) {
+           pst = (totalamount * parseFloat($("#orders_PST").val()))/100;
+
+        }
+        totalamount = totalamount + (gst + pst);
+        $("#txttotalAmount").val(totalamount.toFixed(2));
+        var dis = $("#CustomePrice").val();
+        if (dis == "") {
+            $("#txtPayableamount").val(totalamount.toFixed(2));
+        }
+        else
+        {
+            $("#txttotalAmount").val(totalamount - parseFloat(dis)).toFixed(2);
+            $("#txtPayableamount").val(totalamount.toFixed(2));
+        }
+    }
+
+    // For save order items
+    function SaveOrderItem() {
+        var request="Quote No- ";
+        saveitems();
+
+        if (IsitemAddedProperly == true) {
+            if (orderItems.length > 0) {
+                var checkItem = {
+                    // detail data
+
+                    customerID: $("#customer").find(':selected').data('customer-id'),
+                    OrderDDate: $("#OrderDeliveryDate").val(),
+                    orderComment: $("#orderComment").val(),
+                    orderStatus: $('input[name=orderStatus]:checked').val(),
+                    // delivery address data
+                    Address1: $("#txtaddress").val(),
+                    Address2: $("#txtaddress2").val(),
+                    Country:"",
+                    City:"",
+                    Pincode:"",
+                    PO: $("#txtpo").val(),
+                    Job: "",
+                    CustomePrice: $("#CustomePrice").val(),
+                    Payableamount: $("#txtPayableamount").val(),
+                    Totalamount: $("#txttotalAmount").val(),
+                    GST: $("#orders_GST").val(),
+                    PST: $("#orders_PST").val()
+                }
+                if (checkItem.customerID != "-1" && checkItem.OrderDDate != "" && checkItem.Address1 != "" && checkItem.Address2 != "") {
+                    detailItems.pop();
+                    detailItems.push(checkItem);
+                    $.ajax({
+
+                        type: "POST",
+                        url: '@Url.Action("CreateOrders", "Order")',
+                        data: JSON.stringify({
+                            OrderItems: orderItems,
+                            UserItems: detailItems
+                        }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        success: function (response) {
+                            if (checkItem.orderStatus!=1) {
+                                request = "Order No- ";
+                            }
+                            if (response.status) {
+                                swal({
+                                    title: "Success!",
+                                    text: request + response.RequestID + " is successfully added.",
+                                    icon: "success",
+                                    button: "Ok"
+                                })
+                                    .then((willOk) => {
+                                        if (willOk) {
+                                            window.location.href = '/Order';
+                                        }
+                                    });
+                            } else {
+
+                                toastr["error"]("Something went wrong!")
+                            }
+                        },
+                        failure: function (response) {
+                            toastr["error"]("Something went wrong!")
+                        }
+                    });
+                } else {
+                    toastr["warning"]("Required field are mondatory.")
+                }
+        } else {
+            toastr["warning"]("No item in your order list Or you forget to save an updated item.")
+            }
+        }
+    }
+
+    function getcustomertax(id) {
+         $("#orders_GST").val('0');
+        $("#orders_PST").val('0');
+
+        var clientid = $("#customer option:selected").attr('data-customer-id');
+              $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("GetCustomerdetail", "Order")',
+                        data: JSON.stringify({
+                            clientid: clientid
+                        }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                  success: function (response) {
+                      //    $("#txtbxAddressLine1").val(response.Address1);
+                      //$("#txtbxAddressLine2").val(response.Address2);
+                      //if (response.Country != null) {
+                      //    $("#drpCountry").val(response.Country);
+                      //}
+                      //$("#txtbxCity").val(response.City);
+                      //$("#txtbxPincode").val(response.postalcode);
+
+                      var address1 = response.Address1 + "," + response.City + "," + response.Country + "," + response.postalcode;
+                      GetBalance();
+                      GetCreditLimit();
+                      var address2 = response.Address2 + "," + response.City + "," + response.Country + "," + response.postalcode;
+                      address1 = address1;
+                      $("#txtaddress").html(address1);
+                      $.each(response.taxlist, function (index, value) {
+                          if (value.Name.indexOf('GST') != -1) {
+                              $("#orders_GST").val(value.TaxPercentage);
+                          } else if (value.Name.indexOf('PST') != -1) {
+                              $("#orders_PST").val(value.TaxPercentage);
+                          }
+                      });
+                      Recalamount();
+
+                        },
+                        failure: function (response) {
+                            toastr["error"]("Something went wrong!")
+                        }
+              });
+        //refersh Product List
+        getCategorywithProduct(clientid);
+    }
+
+    //refersh Product List
+    function getCategorywithProduct(id) {
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("GetCategoryProductDetail", "Order")',
+            data: JSON.stringify({
+                clientid: id
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'html',
+            success: function (response) {
+
+                $('#lstProduct').html(response);
+            },
+            failure: function (response) {
+                toastr["error"]("Something went wrong!")
+            }
+        });
+    };
+
+
+
+
+
+     function GetBalance(id) {
+
+         var clientid = $("#customer option:selected").attr('data-customer-id');
+
+
+
+
+          $("#Balance").empty();
+         $.ajax({
+
+                type: 'POST',
+                url: '@Url.Action("GetBalance")', // we are calling json method
+                dataType: 'json',
+                data: { id: clientid },
+                success: function (Balances) {
+                $.each(Balances, function (i, Balance) {
+                $("#Balance").val(Balance.Text);
+                });
+                },
+                error: function (ex) {
+                    alert('Failed to retrieve Balance.' + ex);
+                }
+            });
+            return false;
+    }
+
+
+
+
+     function GetCreditLimit(id) {
+
+         var clientid = $("#customer option:selected").attr('data-customer-id');
+         $("#CreditLimit").empty();
+         $.ajax({
+
+             type: 'POST',
+             url: '@Url.Action("GetCreditLimit")', // we are calling json method
+             dataType: 'json',
+             data: { id: clientid },
+             success: function (CreditLimits) {
+                 $.each(CreditLimits, function (i, CreditLimit) {
+                     $("#CreditLimit").val(CreditLimit.Text);
+                 });
+             },
+             error: function (ex) {
+                 alert('Failed to retrieve CreditLimit.' + ex);
+             }
+         });
+            return false;
+        }
+
+
+
+</script>

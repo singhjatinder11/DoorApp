@@ -1,0 +1,18 @@
+﻿@model MordenDoors.ViewModels.OrderViewModel
+
+<ul class="side-panel" id="categry">
+    @foreach (var cat in Model.CategoryList)
+    {
+        <li class="list-unstyled">
+            <p data-id="@cat.Value">@cat.Text</p>
+            <select id="Door" class="pc form-control" onchange="selectcategory(this)" onmouseup="getprice()">
+                <option value="0">--Select--</option>
+                @foreach (var subcat in Model.Prodcutlist.Where(s => s.CategoryId.ToString() == cat.Value))
+                {
+                    <option data-price="@subcat.Rate" data-unit="@subcat.Units" data-unitid="@subcat.UnitId" data-value="@subcat.ProductName" value="@subcat.ProductId">@string.Concat(subcat.ProductName + " (" + subcat.Rate.ToString("0.00") + " Per/" + @subcat.Units + ")")</option>
+                }
+            </select>
+
+        </li>
+    }
+</ul>

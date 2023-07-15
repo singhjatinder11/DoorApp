@@ -1,0 +1,127 @@
+﻿@model IEnumerable<MordenDoors.ViewModels.CategortyViewModel>
+@{
+    ViewBag.Title = "Category List";
+}
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title col-md-2">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    Add Category
+                </div>
+                <div class="col-md-10 text-right">
+                    <button onclick="CreateCategory(id)" data-toggle="tooltip" title="Add Category" data-placement="left" class="btn btn-alternate"><span class="fa fa-user-plus"></span> Add Category</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row ">
+                    <div class="col-sm-12 col-md-12 col-lg-12">
+                        <table id="table_id" class="table table-bordered table-hover table-striped js-basic-example dataTable" cellspacing="0">
+                            <thead class="container" id="Header">
+                                <tr>
+                                    <th>Category Name</th>
+                                    <th>Category Description</th>
+                                    <th>Sort Order</th>
+                                    <th>Is Main</th>
+                                    <th>Is Active</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.CategoryName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.CategoryDescription)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Sort)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.IsMain)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.IsActive)
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" onclick="UpdateCategory('@item.ID')" data-toggle="tooltip" title="Update" data-placement="right"> <span class="fa fa-edit text-success"></span></a> &nbsp;&nbsp;&nbsp;
+                                           
+                                            @if (item.isUsed)
+                                            {
+                                                <a href="javascript:void(0);" disabled data-toggle="tooltip" title="This Catergory already used" style="cursor:pointer" data-placement="right"> <span class="fa fa-trash text-dark"></span></a>
+                                            }
+                                            else
+                                            {
+                                                <a href="javascript:void(0);" style="cursor:pointer" onclick="Deletecategory(@item.ID)" title="Delete" data-placement="right"> <i class="fa fa-trash text-danger"></i></a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('document').ready(function () {
+	bindDatatableOption('#table_id');
+});
+    function CreateCategory(id = 0) {
+	id = 0;
+	$.get("@Url.Action("CreateCategory", "Category")/" +id,
+        function (data) {
+			$('.modal-body').html('');
+			$('.modal-body').html(data);
+		});
+	if (id == 0) {
+		$("#MordenModal").modal("show");
+	}
+}
+function UpdateCategory(id) {
+	$.get("@Url.Action("EditCategory", "Category")/" +id,
+        function (data) {
+			$('.modal-body').html('');
+			$('.modal-body').html(data);
+		});
+	$("#MordenModal").modal("show");
+}
+function CategoryDetail(id) {
+	$.get("@Url.Action("CategoryDetail", "Category")/" +id,
+		function (data) {
+			$('.modal-body').html('');
+			$('.modal-body').html(data);
+		});
+	$("#MordenModal").modal("show");
+
+}
+    function Deletecategory(id) {
+	$.confirm({
+		title: 'Confirm!',
+		content: 'Do you really want to delete this order item?',
+		buttons: {
+            Yes: function () {
+                window.location = '@Url.Action("DeleteCategory", "Category")/' + id;
+            },
+			No: function () {}
+		}
+	});
+}
+$(function () {
+	var update = '@TempData["UpdateMessage"]';
+	var insert = '@TempData["SuccessMessage"]';
+	var failure = '@TempData["FailureMessage"]';
+    if (update != '')
+        toastr["success"]("Record Updated Successfully!")
+	else if (insert != '') {
+        toastr["success"]("Record Added Successfully!")
+	}
+});
+</script>

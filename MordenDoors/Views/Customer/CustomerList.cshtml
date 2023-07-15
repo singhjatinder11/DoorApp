@@ -1,0 +1,79 @@
+﻿@model IEnumerable<MordenDoors.Models.Customers.CustomersModel>
+    @{ 
+        ViewBag.Title = "Customer List";
+    }
+
+<style>
+       .bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*=col-] {
+        float: none;
+        display: inline-block;
+        right: 249px;
+        width: 213px;
+        position: absolute;
+        top: 124px;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title col-md-2">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    @ViewBag.Title
+                </div>
+                <div class="col-md-10 text-right">
+                    @Html.ActionLink(" Sync Customer", "SyncCustomers", "Admin", null, new { @class = "fa fa-refresh btn btn-lg btn-alternate mb-2 text-white" })
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                        <div class="col-sm-12 col-md-12 col-lg-12">
+                            <table id="table_id" class="table table-responsive-sm table-responsive-md table-responsive-lg table-bordered table-striped table-hover js-basic-example dataTable" cellspacing="0" width="100%">
+                                <thead class="container" id="Header">
+                                    <tr>
+                                        <th>
+                                            @Html.DisplayName("Company Name")
+                                        </th>
+                                        <th>
+                                            @Html.DisplayName("Primary Email")
+                                        </th>
+                                        <th>
+                                            @Html.DisplayName("Primary Phone")
+                                        </th>
+                                        <th>
+                                            @Html.DisplayName("Balance")
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CompanyName)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PrimaryEmailAddr)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PrimaryPhone)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.Balance)
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('document').ready(function () {
+        bindDatatableOption('#table_id');
+        $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
+    });
+</script>

@@ -1,0 +1,1501 @@
+﻿@model MordenDoors.ViewModels.OrderViewModel
+
+<style>
+    legend {
+        font-size: 20px !important;
+        color: brown;
+    }
+
+    thead, tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    tbody {
+        display: block;
+        /*overflow-y: auto;*/
+        table-layout: fixed;
+        /*max-height: 250px;*/
+    }
+
+    .pointer {
+        cursor: pointer;
+    }
+
+    a.additem {
+        color: #27C46B;
+    }
+
+    a.edititem {
+        color: #FFC107;
+    }
+
+    a.deleteitem {
+        color: #E34724;
+    }
+
+    /* Switch button */
+    .btn-default.btn-on.active, .btn-default.btn-off.active {
+        background-color: #5BB75B;
+        color: white;
+    }
+
+    #tbl_order > tbody > tr > td {
+        vertical-align: middle;
+    }
+    .side-panel {
+        height: calc(100vh - 100px);
+        overflow: hidden;
+        overflow-y: auto;
+    }
+
+        .side-panel li {
+            margin: 10px;
+        }
+</style>
+<script src="~/Scripts/bootstrap-select.min.js"></script>
+<link href="~/Content/bootstrap-select.min.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    @{
+                        string orderProcessType = Model.OrderId > 0 ? "Edit" : "Create";
+                    }
+                    @orderProcessType Order
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="col-sm-3">
+                        <ul class="side-panel" id="categry">
+                            @foreach (var cat in Model.CategoryList)
+                            {
+                                <li class="list-unstyled">
+                                    <p data-id="@cat.Value">@cat.Text</p>
+                                    <select id="Door" class="pc form-control" onclick="selectcategory(this)" onmouseup="getprice()">
+                                        <option value="0">--Select--</option>
+                                        @foreach (var subcat in Model.Prodcutlist.Where(s => s.CategoryId.ToString() == cat.Value))
+                                        {
+                                            <option data-price="@subcat.Rate" data-unit="@subcat.Units" data-unitid="@subcat.UnitId" data-value="@subcat.ProductName" value="@subcat.ProductId">@string.Concat(subcat.ProductName + " (" + subcat.Rate + " Per/" + @subcat.Units + ")")</option>
+                                        }
+                                    </select>
+
+                                </li>
+                            }
+                        </ul>
+                        <p id="optionAppear">Add order item for options to appear here!</p>
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="form-row">
+                            <div class="col-md-12">
+                                <div class="pull-right">
+                                    <button id="btnSave" type="button" class="btn bg-grow-early text-white add-new" onclick="SaveOrderItem()"><i class="fa fa-save" data-placement="top" data-toggle="tooltip" data-title="Save Order"></i> Save</button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-5">
+                                <fieldset>
+                                    <legend>Detail</legend>
+                                    <div class="form-group" id="customer">
+                                        @Html.Label("Choose Customer", htmlAttributes: new { @class = "control-label required" })
+                                        <select class="form-control" id="customer" data-live-search="true">
+                                            <option data-customer-id="-1" data-tokens="Select Customer">Select Customer</option>
+                                            @foreach (SelectListItem i in Model.CustomerList)
+                                            {
+                                                <option data-customer-id="@i.Value" data-tokens="@i.Text">@i.Text</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.DueDate, "Estimated Delivery Date", htmlAttributes: new { @class = "control-label required" })
+                                        @Html.TextBoxFor(model => model.DueDate, new { @class = "form-control", placeholder = "Enter Drop-off date here...", @type = "date", id = "OrderDeliveryDate", @min = DateTime.Now, @max = "2050-12-31" })
+                                        @Html.ValidationMessageFor(model => model.DueDate, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.orders.Comments, "Comments", htmlAttributes: new { @class = "control-label" })
+                                        @Html.TextAreaFor(model => model.orders.Comments, 5, 15, htmlAttributes: new { @class = "form-control", id = "orderComment" })
+                                        @Html.ValidationMessageFor(model => model.DeliveryAddress, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.orders.CustomePrice, "Customer discount ", htmlAttributes: new { @class = "control-label" })
+                                        @Html.TextBoxFor(model => model.orders.CustomePrice, new { @class = "form-control", id = "CustomePrice", @onkeyup = "gettotalamount()", @type = "number" })
+
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        @Html.Label("Status", null, htmlAttributes: new { @class = "control-label" })
+                                        <div class="btn-group" id="status" data-toggle="buttons">
+
+
+
+                                            <label id="lblQuote" onclick="addQuoteHeader()" class="btn btn-default btn-on btn-sm active">
+
+                                                <input id="rdoQuote" type="radio" value="1" name="orderStatus" checked="checked">QUOTE
+
+
+                                            </label>
+                                            <label id="lblOrder" onclick="addOrderHeader()" class="btn btn-default btn-off btn-sm ">
+                                                @*<a href="" id="oQrder" >*@
+
+                                                <input id="rdoOrder" type="radio" value="2" name="orderStatus">Order
+
+                                                @*</a>*@
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </fieldset>
+                            </div>
+
+                            <div class="col-md-7 col-lg-7">
+                                <fieldset>
+                                    <legend>Delivery Address</legend>
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.orders.AddressLine1, "Address Line1", htmlAttributes: new { @class = "control-label required" })
+                                        @Html.TextBoxFor(model => model.orders.AddressLine1, new { @class = "form-control", placeholder = "Address Line 1", @type = "text", id = "txtbxAddressLine1", @required = "required" })
+                                        @Html.ValidationMessageFor(model => model.orders.AddressLine1, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.orders.AddressLine2, "Address Line2", htmlAttributes: new { @class = "control-label required" })
+                                        @Html.TextBoxFor(model => model.orders.AddressLine1, new { @class = "form-control", placeholder = "Address Line 2", @type = "text", id = "txtbxAddressLine2", @required = "required" })
+                                        @Html.ValidationMessageFor(model => model.orders.AddressLine1, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.orders.Country, "Country", htmlAttributes: new { @class = "control-label required" })
+                                        <select id="drpCountry" name="country" class="form-control" required>
+                                            <option value="">--Select--</option>
+                                            <option value="Afganistan">Afghanistan</option>
+                                            <option value="Albania">Albania</option>
+                                            <option value="Algeria">Algeria</option>
+                                            <option value="American Samoa">American Samoa</option>
+                                            <option value="Andorra">Andorra</option>
+                                            <option value="Angola">Angola</option>
+                                            <option value="Anguilla">Anguilla</option>
+                                            <option value="Antigua & Barbuda">Antigua & Barbuda</option>
+                                            <option value="Argentina">Argentina</option>
+                                            <option value="Armenia">Armenia</option>
+                                            <option value="Aruba">Aruba</option>
+                                            <option value="Australia">Australia</option>
+                                            <option value="Austria">Austria</option>
+                                            <option value="Azerbaijan">Azerbaijan</option>
+                                            <option value="Bahamas">Bahamas</option>
+                                            <option value="Bahrain">Bahrain</option>
+                                            <option value="Bangladesh">Bangladesh</option>
+                                            <option value="Barbados">Barbados</option>
+                                            <option value="Belarus">Belarus</option>
+                                            <option value="Belgium">Belgium</option>
+                                            <option value="Belize">Belize</option>
+                                            <option value="Benin">Benin</option>
+                                            <option value="Bermuda">Bermuda</option>
+                                            <option value="Bhutan">Bhutan</option>
+                                            <option value="Bolivia">Bolivia</option>
+                                            <option value="Bonaire">Bonaire</option>
+                                            <option value="Bosnia & Herzegovina">Bosnia & Herzegovina</option>
+                                            <option value="Botswana">Botswana</option>
+                                            <option value="Brazil">Brazil</option>
+                                            <option value="British Indian Ocean Ter">British Indian Ocean Ter</option>
+                                            <option value="Brunei">Brunei</option>
+                                            <option value="Bulgaria">Bulgaria</option>
+                                            <option value="Burkina Faso">Burkina Faso</option>
+                                            <option value="Burundi">Burundi</option>
+                                            <option value="Cambodia">Cambodia</option>
+                                            <option value="Cameroon">Cameroon</option>
+                                            <option value="Canada">Canada</option>
+                                            <option value="Canary Islands">Canary Islands</option>
+                                            <option value="Cape Verde">Cape Verde</option>
+                                            <option value="Cayman Islands">Cayman Islands</option>
+                                            <option value="Central African Republic">Central African Republic</option>
+                                            <option value="Chad">Chad</option>
+                                            <option value="Channel Islands">Channel Islands</option>
+                                            <option value="Chile">Chile</option>
+                                            <option value="China">China</option>
+                                            <option value="Christmas Island">Christmas Island</option>
+                                            <option value="Cocos Island">Cocos Island</option>
+                                            <option value="Colombia">Colombia</option>
+                                            <option value="Comoros">Comoros</option>
+                                            <option value="Congo">Congo</option>
+                                            <option value="Cook Islands">Cook Islands</option>
+                                            <option value="Costa Rica">Costa Rica</option>
+                                            <option value="Cote DIvoire">Cote DIvoire</option>
+                                            <option value="Croatia">Croatia</option>
+                                            <option value="Cuba">Cuba</option>
+                                            <option value="Curaco">Curacao</option>
+                                            <option value="Cyprus">Cyprus</option>
+                                            <option value="Czech Republic">Czech Republic</option>
+                                            <option value="Denmark">Denmark</option>
+                                            <option value="Djibouti">Djibouti</option>
+                                            <option value="Dominica">Dominica</option>
+                                            <option value="Dominican Republic">Dominican Republic</option>
+                                            <option value="East Timor">East Timor</option>
+                                            <option value="Ecuador">Ecuador</option>
+                                            <option value="Egypt">Egypt</option>
+                                            <option value="El Salvador">El Salvador</option>
+                                            <option value="Equatorial Guinea">Equatorial Guinea</option>
+                                            <option value="Eritrea">Eritrea</option>
+                                            <option value="Estonia">Estonia</option>
+                                            <option value="Ethiopia">Ethiopia</option>
+                                            <option value="Falkland Islands">Falkland Islands</option>
+                                            <option value="Faroe Islands">Faroe Islands</option>
+                                            <option value="Fiji">Fiji</option>
+                                            <option value="Finland">Finland</option>
+                                            <option value="France">France</option>
+                                            <option value="French Guiana">French Guiana</option>
+                                            <option value="French Polynesia">French Polynesia</option>
+                                            <option value="French Southern Ter">French Southern Ter</option>
+                                            <option value="Gabon">Gabon</option>
+                                            <option value="Gambia">Gambia</option>
+                                            <option value="Georgia">Georgia</option>
+                                            <option value="Germany">Germany</option>
+                                            <option value="Ghana">Ghana</option>
+                                            <option value="Gibraltar">Gibraltar</option>
+                                            <option value="Great Britain">Great Britain</option>
+                                            <option value="Greece">Greece</option>
+                                            <option value="Greenland">Greenland</option>
+                                            <option value="Grenada">Grenada</option>
+                                            <option value="Guadeloupe">Guadeloupe</option>
+                                            <option value="Guam">Guam</option>
+                                            <option value="Guatemala">Guatemala</option>
+                                            <option value="Guinea">Guinea</option>
+                                            <option value="Guyana">Guyana</option>
+                                            <option value="Haiti">Haiti</option>
+                                            <option value="Hawaii">Hawaii</option>
+                                            <option value="Honduras">Honduras</option>
+                                            <option value="Hong Kong">Hong Kong</option>
+                                            <option value="Hungary">Hungary</option>
+                                            <option value="Iceland">Iceland</option>
+                                            <option value="Indonesia">Indonesia</option>
+                                            <option value="India">India</option>
+                                            <option value="Iran">Iran</option>
+                                            <option value="Iraq">Iraq</option>
+                                            <option value="Ireland">Ireland</option>
+                                            <option value="Isle of Man">Isle of Man</option>
+                                            <option value="Israel">Israel</option>
+                                            <option value="Italy">Italy</option>
+                                            <option value="Jamaica">Jamaica</option>
+                                            <option value="Japan">Japan</option>
+                                            <option value="Jordan">Jordan</option>
+                                            <option value="Kazakhstan">Kazakhstan</option>
+                                            <option value="Kenya">Kenya</option>
+                                            <option value="Kiribati">Kiribati</option>
+                                            <option value="Korea North">Korea North</option>
+                                            <option value="Korea Sout">Korea South</option>
+                                            <option value="Kuwait">Kuwait</option>
+                                            <option value="Kyrgyzstan">Kyrgyzstan</option>
+                                            <option value="Laos">Laos</option>
+                                            <option value="Latvia">Latvia</option>
+                                            <option value="Lebanon">Lebanon</option>
+                                            <option value="Lesotho">Lesotho</option>
+                                            <option value="Liberia">Liberia</option>
+                                            <option value="Libya">Libya</option>
+                                            <option value="Liechtenstein">Liechtenstein</option>
+                                            <option value="Lithuania">Lithuania</option>
+                                            <option value="Luxembourg">Luxembourg</option>
+                                            <option value="Macau">Macau</option>
+                                            <option value="Macedonia">Macedonia</option>
+                                            <option value="Madagascar">Madagascar</option>
+                                            <option value="Malaysia">Malaysia</option>
+                                            <option value="Malawi">Malawi</option>
+                                            <option value="Maldives">Maldives</option>
+                                            <option value="Mali">Mali</option>
+                                            <option value="Malta">Malta</option>
+                                            <option value="Marshall Islands">Marshall Islands</option>
+                                            <option value="Martinique">Martinique</option>
+                                            <option value="Mauritania">Mauritania</option>
+                                            <option value="Mauritius">Mauritius</option>
+                                            <option value="Mayotte">Mayotte</option>
+                                            <option value="Mexico">Mexico</option>
+                                            <option value="Midway Islands">Midway Islands</option>
+                                            <option value="Moldova">Moldova</option>
+                                            <option value="Monaco">Monaco</option>
+                                            <option value="Mongolia">Mongolia</option>
+                                            <option value="Montserrat">Montserrat</option>
+                                            <option value="Morocco">Morocco</option>
+                                            <option value="Mozambique">Mozambique</option>
+                                            <option value="Myanmar">Myanmar</option>
+                                            <option value="Nambia">Nambia</option>
+                                            <option value="Nauru">Nauru</option>
+                                            <option value="Nepal">Nepal</option>
+                                            <option value="Netherland Antilles">Netherland Antilles</option>
+                                            <option value="Netherlands">Netherlands (Holland, Europe)</option>
+                                            <option value="Nevis">Nevis</option>
+                                            <option value="New Caledonia">New Caledonia</option>
+                                            <option value="New Zealand">New Zealand</option>
+                                            <option value="Nicaragua">Nicaragua</option>
+                                            <option value="Niger">Niger</option>
+                                            <option value="Nigeria">Nigeria</option>
+                                            <option value="Niue">Niue</option>
+                                            <option value="Norfolk Island">Norfolk Island</option>
+                                            <option value="Norway">Norway</option>
+                                            <option value="Oman">Oman</option>
+                                            <option value="Pakistan">Pakistan</option>
+                                            <option value="Palau Island">Palau Island</option>
+                                            <option value="Palestine">Palestine</option>
+                                            <option value="Panama">Panama</option>
+                                            <option value="Papua New Guinea">Papua New Guinea</option>
+                                            <option value="Paraguay">Paraguay</option>
+                                            <option value="Peru">Peru</option>
+                                            <option value="Phillipines">Philippines</option>
+                                            <option value="Pitcairn Island">Pitcairn Island</option>
+                                            <option value="Poland">Poland</option>
+                                            <option value="Portugal">Portugal</option>
+                                            <option value="Puerto Rico">Puerto Rico</option>
+                                            <option value="Qatar">Qatar</option>
+                                            <option value="Republic of Montenegro">Republic of Montenegro</option>
+                                            <option value="Republic of Serbia">Republic of Serbia</option>
+                                            <option value="Reunion">Reunion</option>
+                                            <option value="Romania">Romania</option>
+                                            <option value="Russia">Russia</option>
+                                            <option value="Rwanda">Rwanda</option>
+                                            <option value="St Barthelemy">St Barthelemy</option>
+                                            <option value="St Eustatius">St Eustatius</option>
+                                            <option value="St Helena">St Helena</option>
+                                            <option value="St Kitts-Nevis">St Kitts-Nevis</option>
+                                            <option value="St Lucia">St Lucia</option>
+                                            <option value="St Maarten">St Maarten</option>
+                                            <option value="St Pierre & Miquelon">St Pierre & Miquelon</option>
+                                            <option value="St Vincent & Grenadines">St Vincent & Grenadines</option>
+                                            <option value="Saipan">Saipan</option>
+                                            <option value="Samoa">Samoa</option>
+                                            <option value="Samoa American">Samoa American</option>
+                                            <option value="San Marino">San Marino</option>
+                                            <option value="Sao Tome & Principe">Sao Tome & Principe</option>
+                                            <option value="Saudi Arabia">Saudi Arabia</option>
+                                            <option value="Senegal">Senegal</option>
+                                            <option value="Seychelles">Seychelles</option>
+                                            <option value="Sierra Leone">Sierra Leone</option>
+                                            <option value="Singapore">Singapore</option>
+                                            <option value="Slovakia">Slovakia</option>
+                                            <option value="Slovenia">Slovenia</option>
+                                            <option value="Solomon Islands">Solomon Islands</option>
+                                            <option value="Somalia">Somalia</option>
+                                            <option value="South Africa">South Africa</option>
+                                            <option value="Spain">Spain</option>
+                                            <option value="Sri Lanka">Sri Lanka</option>
+                                            <option value="Sudan">Sudan</option>
+                                            <option value="Suriname">Suriname</option>
+                                            <option value="Swaziland">Swaziland</option>
+                                            <option value="Sweden">Sweden</option>
+                                            <option value="Switzerland">Switzerland</option>
+                                            <option value="Syria">Syria</option>
+                                            <option value="Tahiti">Tahiti</option>
+                                            <option value="Taiwan">Taiwan</option>
+                                            <option value="Tajikistan">Tajikistan</option>
+                                            <option value="Tanzania">Tanzania</option>
+                                            <option value="Thailand">Thailand</option>
+                                            <option value="Togo">Togo</option>
+                                            <option value="Tokelau">Tokelau</option>
+                                            <option value="Tonga">Tonga</option>
+                                            <option value="Trinidad & Tobago">Trinidad & Tobago</option>
+                                            <option value="Tunisia">Tunisia</option>
+                                            <option value="Turkey">Turkey</option>
+                                            <option value="Turkmenistan">Turkmenistan</option>
+                                            <option value="Turks & Caicos Is">Turks & Caicos Is</option>
+                                            <option value="Tuvalu">Tuvalu</option>
+                                            <option value="Uganda">Uganda</option>
+                                            <option value="United Kingdom">United Kingdom</option>
+                                            <option value="Ukraine">Ukraine</option>
+                                            <option value="United Arab Erimates">United Arab Emirates</option>
+                                            <option value="United States of America">United States of America</option>
+                                            <option value="Uraguay">Uruguay</option>
+                                            <option value="Uzbekistan">Uzbekistan</option>
+                                            <option value="Vanuatu">Vanuatu</option>
+                                            <option value="Vatican City State">Vatican City State</option>
+                                            <option value="Venezuela">Venezuela</option>
+                                            <option value="Vietnam">Vietnam</option>
+                                            <option value="Virgin Islands (Brit)">Virgin Islands (Brit)</option>
+                                            <option value="Virgin Islands (USA)">Virgin Islands (USA)</option>
+                                            <option value="Wake Island">Wake Island</option>
+                                            <option value="Wallis & Futana Is">Wallis & Futana Is</option>
+                                            <option value="Yemen">Yemen</option>
+                                            <option value="Zaire">Zaire</option>
+                                            <option value="Zambia">Zambia</option>
+                                            <option value="Zimbabwe">Zimbabwe</option>
+                                        </select>
+
+                                        @Html.ValidationMessageFor(model => model.orders.Country, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="col-md-6 col-lg-6">
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.orders.City, "City", htmlAttributes: new { @class = "control-label required" })
+                                                @Html.TextBoxFor(model => model.orders.City, new { @class = "form-control", placeholder = "City", @type = "text", id = "txtbxCity", @required = "required" })
+                                                @Html.ValidationMessageFor(model => model.orders.City, "", new { @class = "text-danger" })
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.orders.PinCode, "Pincode", htmlAttributes: new { @class = "control-label required" })
+                                                @Html.TextBoxFor(model => model.orders.PinCode, new { @class = "form-control", placeholder = "Pincode", @type = "text", id = "txtbxPincode", @required = "required" })
+                                                @Html.ValidationMessageFor(model => model.orders.PinCode, "", new { @class = "text-danger" })
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.orders.PO, "PO", htmlAttributes: new { @class = "control-label " })
+                                                @Html.TextBoxFor(model => model.orders.PO, new { @class = "form-control", placeholder = "PO", @type = "text", id = "txtpo" })
+                                                @Html.ValidationMessageFor(model => model.orders.PO, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-lg-6">
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.orders.Job, "JOB", htmlAttributes: new { @class = "control-label" })
+                                                @Html.TextBoxFor(model => model.orders.Job, new { @class = "form-control", placeholder = "JOB", @type = "text", id = "txtjob" })
+                                                @Html.ValidationMessageFor(model => model.orders.Job, "", new { @class = "text-danger" })
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.orders.TotalAmount, "TotalAmount", htmlAttributes: new { @class = "control-label " })
+                                                @Html.TextBoxFor(model => model.orders.PO, new { @class = "form-control", placeholder = "TotalAmount", @type = "text", id = "txttotalAmount", @readonly = "readonly" })
+                                                @Html.ValidationMessageFor(model => model.orders.PO, "", new { @class = "text-danger" })
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.orders.Payableamount, "Payableamount", htmlAttributes: new { @class = "control-label" })
+                                                @Html.TextBoxFor(model => model.orders.Job, new { @class = "form-control", placeholder = "Payableamount", @type = "text", id = "txtPayableamount", @readonly = "readonly" })
+                                                @Html.ValidationMessageFor(model => model.orders.Job, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+
+                        </div>
+                       
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="myModal" role="dialog">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Work Stages</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        @Html.Label("Work Stage", htmlAttributes: new { @class = "control-label col-md-4" })
+                                        <select id="workStages" class="form-control selectpicker" multiple data-live-search="true" style="width:90px">
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        <button id="save" class="btn btn-width bkgrnd-cyan save-details" type="button" name="save-details">Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <fieldset>
+                            <legend>Add Order Items</legend>
+                            <div id="div_orderTable">
+                                <span class="pull-left" id="errmsg" style="color:red"></span>
+                                <span class="pull-right">
+                                    <i class="fa fa-plus fa-2x text-success" title="Add New" onclick="addOrderrow();" data-placement="left" data-toggle="tooltip" data-title="Comment"></i>
+                                </span>
+                                <table id="tbl_order" class="table table-striped table-responsive text-center">
+                                    <thead>
+                                        <tr style="font-size:15px">
+                                            <th style="width:62px">select</th>
+                                            <th>Description</th>
+                                            <th>Quantity</th>
+                                            @if (true)
+                                            {
+                                                <th>Height</th>
+                                                <th>Width</th>
+                                            }
+                                            <th>Total Sqft</th>
+                                            <th style="display:none">Price</th>
+                                            <th style="display:none">Unit</th>
+                                            <th style="display:none">Custom Price</th>
+                                            <th>Total Price</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr id="row-1" style="display:none" data-row="1">
+                                            <td style="width:62px">
+                                                <input type="checkbox" checked onchange="checktblerow(this)" class="chkedit" />
+                                            </td>
+                                            <td>
+                                                <input type="text" disabled multiple class="description form-control" />
+                                            </td>
+                                            <td>
+                                                <input type="number" class="quntity form-control" onchange="calamount(this)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="Height form-control" onchange="calamount(this)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="Width form-control" onchange="calamount(this)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="totalsqf form-control" />
+                                            </td>
+                                            <td style="display:none">
+                                                <input type="text" value="0" disabled class="Price form-control" />
+                                            </td>
+                                            <td style="display:none">
+                                                <input type="text" value="0" disabled class="unit form-control" />
+                                            </td>
+                                            <td style="display:none">
+                                                <input type="text" value="0" onchange="calamount(this)" class="CustomPrice form-control" />
+                                            </td>
+                                            <td>
+                                                <input type="text" disabled class="TotalPrice form-control" />
+                                            </td>
+                                            <td>
+                                                <a class="edititem pointer" data-toggle="tooltip" title="Edit" style="display:none;"><i class="material-icons">edit</i></a>
+                                                <a class="deleteitem pointer" data-toggle="tooltip" title="Delete"><i class="material-icons">delete</i></a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="pull-right">
+                            <button id="btnSave" type="button" class="btn bg-grow-early text-white add-new" data-placement="top" data-toggle="tooltip" data-title="Save Order" onclick="SaveOrderItem()"><i class="fa fa-save"></i> Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.OrderId == 0)
+{
+    <script>
+    function checknumber(num) {
+    var x = $(num).val();
+    if (x.length > 0) {
+    if (x < 1) {
+    alert("Please enter valid quintity and must quintity greater then zero");
+    $(num).val('');
+    return false;
+    }
+    }
+
+    }
+    // ready function
+    $(document).ready(function () {
+    $('#categry').hide();
+    $('#optionAppear').show();
+
+    //bindItems();
+    });
+
+    // Used global variables
+    var detailItems = [];
+    var orderItems = [];
+    var orderItemComments = [];
+    BindCategoryChange(1);
+    BindProductChange(1);
+    CalculateAmount(1);
+    var categoryId;
+    var productId;
+    var currentindex;
+    var discount;
+    var description = '';
+    var price = '0';
+    id = 0;
+
+    function selectcategory(drp) {
+    description = '';
+
+    $("#categry li").each(function (index,value) {
+
+    var heder = $(value).find('p').html();
+    var selectedname = $(value).find('select option:selected').text();
+    if ($(value).find('select option:selected').val() != '0') {
+    description = description + " " + heder + "(" + selectedname + "),";
+    if (index == 0) {
+
+    id = $(value).find('select option:selected').val();
+
+    }
+    }
+    });
+
+    $("#tbl_order tbody tr").each(function (index,Value) {
+    var td = $(Value).find('td');
+    if ($(td[0]).find(".chkedit").is(':checked')) {
+
+    $(td[1]).find('input').val(description);
+    $(td[1]).find('input').attr('data-id',id);
+    $(td[1]).find('input').attr('title', description);
+    } else {
+    console.log("erroe "+ index)
+    }
+    });
+
+    }
+
+    function getprice() {
+    $("#categry li").each(function (index,value) {
+
+    if ($(value).find('select option:selected').val() != '0') {
+    if (index == 0) {
+    getCustomPrice($(value).find('p').attr('data-id'), $(value).find('select option:selected').val()).then(function (data) {
+
+    var rate = $(value).find('select option:selected').attr('data-price');
+    var unit = $(value).find('select option:selected').attr('data-unit');
+    var unitid=$(value).find('select option:selected').attr('data-unitid');
+    $("#tbl_order tbody tr").each(function (index, Value) {
+
+
+    var td = $(Value).find('td');
+    var hgh = $(td[3]).find('input').val();
+    var width = $(td[4]).find('input').val();
+    //if (hgh == 0 || width == 0) {
+    //    alert('Please add height width');
+    //    return false;
+    //}
+    if ($(td[0]).find(".chkedit").is(':checked')) {
+    $(td[7]).find('input').val(unit);
+    $(td[7]).find('input').attr('data-id', unitid);
+
+    if (unitid != "1") {
+    $(td[4]).find('input').attr('disabled', 'disabled');
+    $(td[5]).find('input').attr('disabled', 'disabled');
+    } else {
+    $(td[4]).find('input').removeAttr('disabled', 'disabled');
+    $(td[5]).find('input').removeAttr('disabled', 'disabled');
+    }
+    if (data == "00") {
+    $(td[8]).find('input').val(rate);
+    } else {
+    $(td[8]).find('input').val(data);
+    }
+
+    $(td[6]).find('input').val(rate);
+
+    } else {
+    console.log("erroe "+ index)
+    }
+    });
+
+    Recalamount();
+    });
+
+    }
+    }
+    });
+    }
+    function getCustomPrice(catid, product) {
+    return new Promise(function (resolved, reject) {
+
+    var customerId = $("#customer").find(':selected').data('customer-id');
+    var data = {
+    'customerId': customerId,'productId':product,'categoryId':catid
+    }
+    $.ajax({
+    type: "POST",
+    url: '@Url.Action("getcustomerprice", "Order")',
+    data: JSON.stringify(data),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function (data) {
+    resolved(data);
+    },
+    failure: function (response) {
+    alert("Fail");
+    },
+    error: function (response) {
+    alert("Error");
+    }
+    });
+    })
+
+    }
+    function checktblerow(tb) {
+    resetdrpdown();
+    $("#tbl_order tbody tr").each(function (index,Value) {
+    var td = $(Value).find('td');
+    $(td[0]).find(".chkedit").prop('checked', false);
+    });
+    $(tb).prop('checked', true);
+
+    bindcatagery(tb);
+
+    }
+
+
+    function resetdrpdown() {
+    $("#categry li").each(function () {
+    $(this).find('select').prop('selectedIndex',0);
+    });
+    }
+    function bindcatagery(td) {
+
+    var drpdat = $(td).parent('td').parent('tr').find('td');
+    var dt = $(drpdat[1]).find('input').val();
+    var drplist = dt.split(',');
+    $(drplist).each(function (index, value) {
+    if (value != "") {
+    var gethd = value.split('(');
+
+    $("#categry li").each(function () {
+    var heder = $(this).find('p').html();
+    var slvl = gethd[1].slice(0, -1);
+    if (heder == gethd[0].trim()) {
+    $(this).find('select option[data-value="' + slvl + '"]').prop('selected',true);
+
+    }
+    });
+    }
+    });
+
+    }
+    // Fetch all product for selected category
+    function BindCategoryChange(index) {
+    var $row = $('#row-' + index);
+    $row.find('.category').unbind("change").bind("change", function () {
+    if (this.selectedOptions[0].dataset.categoryId != '-1') {
+    $.ajax({
+    type: "POST",
+    url: "/Order/ProductList",
+    data: JSON.stringify({ categoryId: parseInt(this.selectedOptions[0].dataset.categoryId) }),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function (response) {
+    if (response.products.length > 0) {
+    $row.find('.product').html('');
+    var options = '';
+    options += '<option value="-1">Select Product</option>';
+    for (var i = 0; i < response.products.length; i++) {
+    options += '<option value="' + response.products[i].Value + '">' + response.products[i].Text + '</option>';
+    }
+    $row.find('.product').html(options);
+    }
+    },
+    failure: function (response) {
+    alert(response.d);
+    },
+    error: function (response) {
+    alert(response.d);
+    }
+    });
+    }
+    else {
+    $row.find('.product').html('');
+    var option = '<option value="-1">Select Product</option>';
+    $row.find('.product').html(option).selectpicker('refresh');
+    }
+    });
+    }
+
+    // Fetch a actual Price of a selected Product
+    function BindProductChange(index) {
+
+    var $row = $('#row-' + index);
+    $row.find('.product').unbind("change").bind("change", function () {
+    if (this.selectedOptions[0].value != '-1') {
+    var data = {
+    productId: parseInt($('#row-' + index + ' .product').val()),
+    customerId: parseInt($("#customer").find(':selected').data('customer-id'))
+    };
+    if (data.productId > 0) {
+    $('#row-' + index + ' .linkStage').css('display', 'inline-block');
+    }
+    $.ajax({
+    type: "POST",
+    url: "/Order/ProductPrice",
+    data: JSON.stringify(data),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function (response) {
+    if (response.productWorkstages.length > 0) {
+    $.each(response.productWorkstages, function (idx, item) {
+    var selectedText = this.Selected === true ? 'selected' : '';
+    $('#save').click(function () {
+    $('#myModal').modal('hide');
+    })
+    $("#workStages").append('<option ' + selectedText + ' value="' + item.Value + '">' + item.Text + '</option>').selectpicker('refresh');
+    });
+    }
+
+    unitName = "/ " + response.productPrice.UnitName;
+    var customPrice = response.productPrice.Rate - ((response.customerPrice * response.productPrice.Rate) / 100);
+    $('#row-' + index + ' .price').val(response.productPrice.Rate);
+    $('#row-' + index + ' .productUnitType')[0].innerHTML = unitName;
+    $('#row-' + index + ' .customPrice').val(customPrice);
+    $('#row-' + index + ' .quantity').removeAttr('disabled');
+    $('#row-' + index + ' .customPrice').removeAttr('disabled');
+
+    if (response.productPrice.IsDimension) {
+    $('#row-' + index + ' .height').removeAttr('disabled');
+    $('#row-' + index + ' .width').removeAttr('disabled');
+    }
+    else {
+    $('#row-' + index + '').find('.height').attr('disabled', 'disabled');
+    $('#row-' + index + '').find('.width').attr('disabled', 'disabled');
+
+    }
+    },
+    failure: function (response) {
+    alert(response.d);
+    },
+    error: function (response) {
+    alert(response.d);
+    }
+    });
+    }
+    else {
+    $('#row-' + index + ' .linkStage').css('display', 'none');
+    }
+    });
+    }
+
+    function calamount(txt) {
+
+    var res = $(txt).parent('td').parent('tr').find('td');
+    var unittype = $(res[7]).find('input').attr('data-id');
+    var quantity = $(res[2]).find('input').val();
+
+    // if (unittype == 1) {
+    
+    var hgh = $(res[3]).find('input').val();
+    var width = $(res[4]).find('input').val();
+    var area = parseFloat(hgh) * parseFloat(width);
+    var totalarea = area * quantity;
+    quantity = totalarea;
+
+            if (hgh != "" && width != "" && quantity != "") {
+                $(res[5]).find('input').val(quantity);
+            }
+            else {
+                quantity = 0;
+                $(res[5]).find('input').val(quantity);
+            }
+                 
+          //  }
+            var customPrice = $(res[8]).find('input').val();
+            
+            var totalPrice = parseFloat(quantity) * parseFloat(customPrice);
+           // $(res[9]).find('input').val(totalPrice);
+            Recalamount();
+        }
+        function getselectedtd() {
+        return new Promise(function (resolved, reject) {
+             $("#tbl_order tbody tr").each(function (index,Value) {
+                var td = $(Value).find('td');
+                if ($(td[0]).find(".chkedit").is(':checked')) {
+                    
+                    resolved(td);
+                    
+                } else {
+                    console.log("erroe "+ index)
+                }
+            });
+        });
+    }
+        function Recalamount(txt) {
+
+    var totalPrice = 0;
+    var selectedtd;
+    $("#tbl_order tbody tr").each(function (index,Value) {
+    var td = $(Value).find('td');
+    if ($(td[0]).find(".chkedit").is(':checked')) {
+    selectedtd = td;
+    } else {
+    console.log("erroe "+ index)
+    }
+    });
+    $("#categry li").each(function (index,value) {
+    var totalarea = 0;
+    if ($(value).find('select option:selected').val() != '0') {
+    var quantity = $(selectedtd[2]).find('input').val();
+    var unittype = $(value).find('select option:selected').attr('data-unitid');
+    var price = $(value).find('select option:selected').attr('data-price');
+    var hgh = $(selectedtd[3]).find('input').val();
+    var width = $(selectedtd[4]).find('input').val();
+    var area = parseFloat(hgh) * parseFloat(width);
+    if (unittype == 1) {
+    //area = area * 144;
+    quantity = (area * quantity);
+    totalPrice = totalPrice + (parseFloat(quantity) * parseFloat(price));
+
+    } else {
+   // quantity = (area * quantity);
+    totalPrice = totalPrice + (parseFloat(quantity) * parseFloat(price));
+    }
+
+    }
+    });
+    var ggg = parseFloat(isNaN(totalPrice) ? 0 : totalPrice);
+    $(selectedtd[9]).find('input').val(ggg.toFixed(2));
+
+    gettotalamount();
+
+    //var res = $(txt).parent('td').parent('tr').find('td');
+    //var unittype = $(res[7]).find('input').attr('data-id');
+    //var quantity = $(res[3]).find('input').val();
+
+    //if (unittype == 1) {
+    //    var hgh = $(res[4]).find('input').val();
+    //    var width = $(res[5]).find('input').val();
+    //    var area = parseFloat(hgh) * parseFloat(width);
+    //    var totalarea = area * quantity;
+    //    quantity = totalarea;
+    //}
+    //var customPrice = $(res[8]).find('input').val();
+    //var totalPrice = parseFloat(quantity) * parseFloat(customPrice);
+    //$(res[9]).find('input').val(totalPrice);
+
+    }
+
+
+
+    // Here calculating a total price & check custom price for updation
+    function CalculateAmount(index) {
+    var $row = $('#row-' + index);
+
+    $row.find('.height,.width,.customPrice').keypress(function (e) {
+
+    //if the letter is not digit then display error and don't type anything
+    if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+    //display error message
+    $("#errmsg").html("Please enter only Digits.").show(1000).fadeOut('slow');
+    $(this).attr('style', 'border-color:red');
+    return false;
+    }
+    else {
+    $(this).removeAttr('style');
+    }
+    });
+    // for Quantity
+    $row.find('.quantity').unbind("change").bind("change", function () {
+    var quantity = $row.find('.quantity')[0].value;
+    var customPrice = $row.find('.customPrice')[0].value;
+    var totalPrice = quantity * customPrice;
+    var tp = totalPrice.toFixed(2);
+    $row.find('.totalPrice').val(tp);
+    });
+
+    // For CustomPrice
+    $row.find('.customPrice').unbind("click").bind("click", function () {
+    var quantity = $row.find('.quantity')[0].value;
+    var oldPrice = $row.find('.customPrice')[0].value;
+
+    var divOk = '<div class="updateCPrice" style="display: inline-flex;margin-top: 5px;font-size: 12px;"><button style="margin-right: 5px; " class="btnOk">OK</button><button class="btnCancel">Cancel</button></div>';
+
+    if ($(this).parent().find('.updateCPrice').length == 0) {
+    $(this).parent().append($(divOk));
+    }
+
+    $row.find('.btnOk').unbind("click").bind("click", function () {
+    // For Update Custom Price...
+
+    price = $row.find('.price')[0].value;
+    customPrice = $row.find('.customPrice')[0].value;
+    if (customPrice>price) {
+    swal({ title: "Warning!", text: "Custom Price is always less than Price", icon: "warning", button: "Ok" })
+    .then((willOk) => {
+    if (willOk) {
+    $('#row-' + index + ' .customPrice').focus();
+    }
+    });
+    }
+    else {
+    var totalPrice = quantity * customPrice;
+    categoryId = $('#row-' + index + ' .category :selected')[0].attributes[0].value;
+    productId = $('#row-' + index + ' .product').val();
+    customerId = $("#customer").find(':selected').data('customer-id');
+    discount = 100 - ((customPrice / price) * 100);
+    UpdateCustomPrice();
+    $row.find('.totalPrice').val(totalPrice);
+    $(this).parent().remove();
+    }
+    });
+
+    $row.find('.btnCancel').unbind("click").bind("click", function () {
+    $(this).parent().remove();
+    $row.find('.customPrice').val(oldPrice);
+    });
+
+    });
+    }
+        // Add dynamic heading
+        function addQuoteHeader() {
+            
+            $("#lblHeaderOrder").html("");
+                  $("#lblHeaderOrder").html("New Quote Request");
+
+        }
+        function addOrderHeader() {
+            
+            $("#lblHeaderOrder").html("");
+            $("#lblHeaderOrder").html("New Sales Order");
+        }
+    // Add a clone row
+    function addOrderrow() {
+    resetdrpdown();
+    $("#tbl_order tbody tr").each(function (index,Value) {
+    var td = $(Value).find('td');
+    $(td[0]).find(".chkedit").prop('checked', false);
+    });
+
+    var detailItem = {
+    // detail data
+    customerID: $("#customer").find(':selected').data('customer-id'),
+    OrderDDate: $("#OrderDeliveryDate").val(),
+    orderComment: $("#orderComment").val(),
+    orderStatus: $('input[name=orderStatus]:checked').val(),
+    // delivery address data
+    Address1: $("#txtbxAddressLine1").val(),
+    Address2: $("#txtbxAddressLine2").val(),
+    Country: $("#txtbxCountry").val(),
+    City: $("#txtbxCity").val(),
+    Pincode: $("#txtbxPincode").val(),
+    }
+    if (detailItem.customerID != "-1" && detailItem.OrderDDate != "" && detailItem.Address1 != "" && detailItem.Country != "" && detailItem.City != "" & detailItem.Pincode
+    != "")
+    {
+
+    var row = $('#tbl_order').find('tbody tr:first');
+    var item = $('#tbl_order').find('tbody tr').length + 1;
+    var preRow = item - 1;    
+    $('#tbl_order').append('<tr id="row-' + item + '" data-row="' + item + '">' + row[0].innerHTML.trim() + '</tr>');
+    $('#categry').show();
+    $('#optionAppear').hide();
+    $('#row-' + item + '').find('.category').focus();
+    $('#row-' + item + '').find('.totalsqf').attr('disabled', 'disabled');
+    $("#workStages").html('').selectpicker('refresh');    
+    currentindex = $('#tbl_order tbody tr').length - 1;
+
+
+    }
+    else {
+    swal({ title: "Warning!", text: "Please fill above details properly. ", icon: "warning", button: "Ok" });
+    }
+    }
+
+    // Bind saved items - temp use
+    function bindItems() {
+    // fetch temp order items from local storage
+    if (localStorage.getItem("tempUserItem") != '' && JSON.parse(localStorage.getItem("tempUserItem")) != null) {
+
+    detailItems = JSON.parse(localStorage.getItem("tempUserItem"));
+
+    if (detailItems.length > 0) {
+    $("#customer option[data-customer-id='" + detailItems[0].customerID + "']").prop("selected", true);
+    $("#OrderDeliveryDate").val(detailItems[0].OrderDDate);
+    $("#orderComment").val(detailItems[0].orderComment);
+    if (detailItems[0].orderStatus == "1") {
+    $('input[name=orderStatus][value=1]').attr("checked", "checked");
+    $('input[name=orderStatus][value=1]').parent().addClass("active");
+    $('input[name=orderStatus][value=2]').removeAttr("checked");
+    $('input[name=orderStatus][value=2]').parent().removeClass("active");
+    }
+    else {
+    $('input[name=orderStatus][value=2]').attr("checked", "checked");
+    $('input[name=orderStatus][value=2]').parent().addClass("active");
+    $('input[name=orderStatus][value=1]').removeAttr("checked");
+    $('input[name=orderStatus][value=1]').parent().removeClass("active");
+    }
+    // delivery address data
+    $("#txtbxAddressLine1").val(detailItems[0].Address1);
+    $("#txtbxAddressLine2").val(detailItems[0].Address2);
+    $("#txtbxCountry").val(detailItems[0].Country);
+    $("#txtbxCity").val(detailItems[0].City);
+    $("#txtbxPincode").val(detailItems[0].Pincode);
+    }
+    }
+
+    if (localStorage.getItem("tempOrderItem") != '' && JSON.parse(localStorage.getItem("tempOrderItem")) != null) {
+
+    orderItems = JSON.parse(localStorage.getItem("tempOrderItem"));
+
+    if (orderItems.length > 0) {
+    for (var i = 0; i < orderItems.length; i++) {
+    addOrderrow();
+
+    var item = orderItems[i];
+    var rowIndex = item.RowId;
+    $('#row-' + rowIndex + ' .category option:selected').text(item.SelectedCategoryText);
+    $('#row-' + rowIndex + ' .category option:selected')[0].dataset.categoryId=item.SelectedCategoryValue;
+    $('#row-' + rowIndex + ' .product option:selected').text(item.SelectedProductText);
+    $('#row-' + rowIndex + ' .product option:selected').val(item.SelectedProductValue);
+    $('#row-' + rowIndex + ' .quantity').val(item.Quantity);
+    $('#row-' + rowIndex + ' .height').val(item.Height);
+    $('#row-' + rowIndex + ' .width').val(item.Width);
+    $('#row-' + rowIndex + ' .price').val(item.Price);
+    $('#row-' + rowIndex + ' .customPrice').val(item.CustomPrice);
+    $('#row-' + rowIndex + ' .totalPrice').val(item.TotalPrice);
+
+    // for action buttons
+    $('#row-' + rowIndex + ' .edititem').attr('style', 'display : inline-block');
+    $('#row-' + rowIndex + ' .additem').attr('style', 'display : none');
+    }
+    }
+    }
+    }
+
+    // Add comment for current row.
+    $("#tbl_order").on("click", '.commentItem', function () {
+
+    var areaValue = "";
+    var selectVal;
+    rowIndex = $(this).parents("tr").attr("data-row");
+    var selectedRow = orderItemComments.find(x => x.RowId === parseInt(rowIndex));
+    if (selectedRow) {
+    areaValue = selectedRow.commentvalue === undefined ? "" : selectedRow.commentvalue
+    }
+    else if (orderItems.length>0) {
+    selectVal = orderItems.find(x => x.RowId === parseInt(rowIndex));
+    areaValue = selectVal.ItemComment === undefined ? "" : selectVal.ItemComment
+    }
+    swal({
+    text: "Write comment here:",
+    content: {
+    element: "textarea",
+    attributes: {
+    value: areaValue
+    }
+    }
+    }).then((value) => {
+    if (value) {
+    var item = {
+    RowId: parseInt(rowIndex),
+    commentvalue: document.querySelector(".swal-content__textarea").value
+    }
+
+    if (orderItemComments.find(x => x.RowId === parseInt(rowIndex))) {
+    var selectItemComment = orderItemComments.find(x => x.RowId === parseInt(rowIndex));
+    orderItemComments.pop(selectItemComment);
+    orderItemComments.pop(item);
+    }
+    else {
+    orderItemComments.push(item);
+    }
+    }
+    });
+    });
+
+    // Save a current row.
+    $("#tbl_order").on("click", '.additem', function () {
+
+    currentindex = $('#tbl_order >tbody >tr').length;
+    rowIndex = $(this).parents("tr").attr("data-row");
+    var itemComment="";
+    if (orderItemComments.length>0) {
+    itemComment = orderItemComments.find(x => x.RowId === parseInt(rowIndex));
+    itemComment = itemComment == undefined ? "" : itemComment.commentvalue;
+    }
+    else if (orderItems.length > 0) {
+    itemComment = orderItems.find(x => x.RowId === parseInt(rowIndex));
+    itemComment = itemComment == undefined ? "" : itemComment.ItemComment;
+    }
+
+    var item = {
+    RowId: parseInt(rowIndex),
+    SelectedCategoryText: $('#row-' + rowIndex + ' .category :selected').text(),
+    SelectedCategoryValue: $('#row-' + rowIndex + ' .category :selected')[0].dataset.categoryId,
+    SelectedProductText: $('#row-' + rowIndex + ' .product :selected').text(),
+    SelectedProductValue: $('#row-' + rowIndex + ' .product').val(),
+    Quantity: $('#row-' + rowIndex + ' .quantity').val(),
+    Height: $('#row-' + rowIndex + ' .height').val(),
+    Width: $('#row-' + rowIndex + ' .width').val(),
+    Price: $('#row-' + rowIndex + ' .price').val(),
+    CustomPrice: $('#row-' + rowIndex + ' .customPrice').val(),
+    TotalPrice: $('#row-' + rowIndex + ' .totalPrice').val(),
+    workstage: $('#workStages').val(),
+    ItemComment: itemComment
+
+    };
+    if (orderItems==null || orderItems.length == 0) {
+    if (item.SelectedCategoryValue == "-1" || item.SelectedProductValue == "-1" || item.CustomPrice == "" || item.Quantity == "") {
+    swal({ title: "Warning!", text: "Please choose all fields", icon: "warning", button: "Ok" })
+    .then((willOk) => {
+    if (willOk) {
+    $('#row-' + rowIndex + ' .category').focus();
+    }
+    });
+    }
+    else {
+
+    // save order item in an temp order array
+    orderItems.push(item);
+
+    // for action buttons
+    $('#row-' + rowIndex + ' .edititem').attr('style', 'display : inline-block');
+    $('#row-' + rowIndex + ' .additem').attr('style', 'display : none');
+
+    // for disabling row
+    $('#row-' + rowIndex + '').find('input').attr('disabled', 'disabled');
+    $('#row-' + rowIndex + '').find('select').attr('disabled', 'disabled');
+    }
+
+    }
+    else {
+    if (orderItems.find(x => x.RowId === parseInt(rowIndex))) {
+    var selectedItem = orderItems.find(x => x.RowId === parseInt(rowIndex));
+
+    if (item.SelectedCategoryValue == "-1" || item.SelectedProductValue == "-1" || item.CustomPrice == "" || item.Quantity == "") {
+    swal({ title: "Warning!", text: "Please choose all fields", icon: "warning", button: "Ok" })
+    .then((willOk) => {
+    if (willOk) {
+    $('#row-' + rowIndex + ' .category').focus();
+    }
+    });
+    }
+    else {
+    // update added order
+    orderItems.pop(selectedItem);
+    orderItemComments.pop(selectedItem);
+
+    // save order item in an temp order array
+    orderItems.push(item);
+
+    // for action buttons
+    $('#row-' + rowIndex + ' .edititem').attr('style', 'display : inline-block');
+    $('#row-' + rowIndex + ' .additem').attr('style', 'display : none');
+
+    // for disabling row
+    $('#row-' + rowIndex + '').find('input').attr('disabled', 'disabled');
+    $('#row-' + rowIndex + '').find('select').attr('disabled', 'disabled');
+
+    }
+    }
+    else {
+    if (orderItems.find(x =>x.SelectedProductValue == item.SelectedProductValue))
+    {
+    swal({ title: "Warning!", text: "Product already added. Change your selected Product", icon: "warning", button: "Ok" });
+
+    // for action buttons
+    $('#row-' + rowIndex + ' .edititem').attr('style', 'display : none');
+    $('#row-' + rowIndex + ' .additem').attr('style', 'display : inline-block');
+
+    // for enabling row
+    $('#row-' + rowIndex + '').find('input').removeAttr('disabled');
+    $('#row-' + rowIndex + '').find('select').removeAttr('disabled');
+
+    }
+    else {
+
+    if (item.SelectedCategoryValue == "-1" || item.SelectedProductValue == "-1" || item.CustomPrice == "" || item.Quantity == "") {
+    swal({ title: "Warning!", text: "Please choose all fields", icon: "warning", button: "Ok" })
+    .then((willOk) => {
+    if (willOk) {
+    $('#row-' + rowIndex + ' .category').focus();
+    }
+    });
+    }
+    else {
+    // save order item in an temp order array
+    orderItems.push(item);
+
+    // for action buttons
+    $('#row-' + rowIndex + ' .edititem').attr('style', 'display : inline-block');
+    $('#row-' + rowIndex + ' .additem').attr('style', 'display : none');
+
+    // for disabling row
+    $('#row-' + rowIndex + '').find('input').attr('disabled', 'disabled');
+    $('#row-' + rowIndex + '').find('select').attr('disabled', 'disabled');
+    }
+    }
+    }
+    }
+    // storing temp order items in local storage
+    localStorage.setItem("tempOrderItem", JSON.stringify(orderItems));
+    currentindex = $('#tbl_order >tbody >tr').length;
+    });
+
+    // Edit a current row
+    $("#tbl_order").on("click", '.edititem', function () {
+
+    currentindex = $('#tbl_order >tbody >tr').length;
+    rowIndex = $(this).parents("tr").attr("data-row");
+    $('#row-' + rowIndex + ' .category').focus();
+
+    // for action buttons
+    $('#row-' + rowIndex + ' .edititem').attr('style', 'display : none');
+    $('#row-' + rowIndex + ' .additem').attr('style', 'display : inline-block');
+
+    // for enabling row
+    $('#row-' + rowIndex + '').find('input').removeAttr('disabled');
+    $('#row-' + rowIndex + '').find('select').removeAttr('disabled');
+    });
+
+    // Delete a current row
+    $("#tbl_order").on("click", '.deleteitem', function () {
+    var that = this;
+    swal({
+    title: 'Warning!',
+    text: 'Are you sure you want to delete this order item?',
+    icon: 'warning',
+    buttons: ['No', 'Yes'],
+    }).then(function (value) {
+    if (value) {
+    var rowNumber = $(that).parents("tr").attr("data-row");
+    $("#tbl_order tbody tr").eq(rowNumber - 1).remove();
+    ReOrderTrs();
+    }
+    });
+    });
+
+    // For re-ordering all rows after deleting
+    function ReOrderTrs() {
+    $("#tbl_order tbody tr").each(function (index) {
+    $(this).attr("id", "row-" + (index + 1));
+    $(this).attr("data-row", (index + 1));
+    });
+    }
+
+    // For Update custom Price
+    function UpdateCustomPrice() {
+    $.ajax({
+    type: "POST",
+    url: '@Url.Action("UpdatePrice", "Customer")',
+    data: 'customerId=' + customerId + '&productId=' + productId + '&categoryId=' + categoryId + '&price=' + discount,
+    success: function (response) {
+    },
+    failure: function (response) {
+    alert("Fail");
+    },
+    error: function (response) {
+    alert("Error");
+    }
+    });
+    }
+
+
+    function saveitems() {
+    orderItems = [];
+    $("#tbl_order tbody tr").each(function (index, Value) {
+    if (index != 0) {
+    var td = $(Value).find('td');
+    var item = {
+    RowId: index,
+    ProductId: $(td[1]).find('input').attr('data-id'),
+    ItemComment: $(td[1]).find('input').val(),
+    workstage: [],
+    Quantity: $(td[2]).find('input').val(),
+    Height: $(td[3]).find('input').val(),
+    Width: $(td[4]).find('input').val(),
+    Price:0,
+    CustomPrice:0,
+    TotalPrice: $(td[9]).find('input').val()
+    };
+    orderItems.push(item);
+    }
+    });
+    }
+
+    function gettotalamount() {
+    var totalamount = 0;
+    $("#tbl_order tbody tr").each(function (index, Value) {
+    if (index != 0) {
+    var td = $(Value).find('td');
+    totalamount = totalamount + parseFloat($(td[9]).find('input').val());
+    }
+    });
+    $("#txttotalAmount").val(totalamount.toFixed(2));
+    var dis = $("#CustomePrice").val();
+    if (dis == "") {
+    $("#txtPayableamount").val(totalamount.toFixed(2));
+    }
+    else {
+    $("#txtPayableamount").val((totalamount - parseFloat(dis)).toFixed(2));
+    }
+
+    }
+    // For save order items
+    function SaveOrderItem() {
+    saveitems();
+
+    var HasEditButton = 0;
+    $('.edititem').each(function (i, row) {
+    rowIndex = $(row).parents("tr").attr("data-row");
+    if ($('#row-' + rowIndex + ' .edititem').attr("style") == "display : inline-block") {
+    HasEditButton++;
+    }
+    });
+
+    if (HasEditButton == 0) {
+    if (orderItems.length > 0) {
+    var checkItem = {
+    // detail data
+    customerID: $("#customer").find(':selected').data('customer-id'),
+    OrderDDate: $("#OrderDeliveryDate").val(),
+    orderComment: $("#orderComment").val(),
+    orderStatus: $('input[name=orderStatus]:checked').val(),
+    // delivery address data
+    Address1: $("#txtbxAddressLine1").val(),
+    Address2: $("#txtbxAddressLine2").val(),
+    Country: $("#drpCountry option:selected").val(),
+    City: $("#txtbxCity").val(),
+    Pincode: $("#txtbxPincode").val(),
+    PO: $("#txtpo").val(),
+    Job: $("#txtjob").val(),
+    CustomePrice: $("#CustomePrice").val(),
+    Payableamount: $("#txtPayableamount").val(),
+    Totalamount: $("#txttotalAmount").val()
+    }
+
+    if (checkItem.customerID != "-1" && checkItem.OrderDDate != "" && checkItem.Address1 != "" && checkItem.Country != "" && checkItem.City != "" & checkItem.Pincode
+    != "") {
+    detailItems.pop();
+    detailItems.push(checkItem);
+    // storing temp order user detail in local storage
+    //localStorage.removeItem("tempUserItem");
+    //localStorage.setItem("tempUserItem", JSON.stringify(detailItems));
+    $.ajax({
+    type: "POST",
+    url: '@Url.Action("CreateOrders", "Order")',
+    data: JSON.stringify({
+    OrderItems: orderItems, UserItems: detailItems
+    }),
+    contentType: "application/json; charset=utf-8",
+    dataType: 'json',
+    success: function (response) {
+    if (response.status) {
+    swal({ title: "Success!", text: "Order is successfully added.", icon: "success", button: "Ok" })
+    .then((willOk) => {
+    if (willOk) {
+    localStorage.clear();
+    window.location.href = '/Order';
+    }
+    });
+    }
+    else {
+    swal({ title: "Error!", text: "Something went wrong.", icon: "Unsuccessful", button: "Ok" });
+    }
+    },
+    failure: function (response) {
+    swal({ title: "Error!", text: "Something went wrong.", icon: "Unsuccessful", button: "Ok" });
+    }
+    });
+    }
+    else {
+    swal({ title: "Warning!", text: "Required field are mondatory.", icon: "warning", button: "Ok" });
+    }
+
+    }
+    else {
+    swal({ title: "Warning!", text: "No item in your order list Or you forget to save an updated item.", icon: "warning", button: "Ok" });
+    }
+    }
+    else {
+    swal({ title: "Warning!", text: "Please save your edited order item.", icon: "warning", button: "Ok" });
+    }
+    }
+
+    </script>
+}
+else
+{
+    <script type="text/javascript">
+            // incase of edit orderId
+
+    </script>
+}

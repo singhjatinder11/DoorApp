@@ -1,0 +1,207 @@
+﻿@model MordenDoors.ViewModels.CustomersViewModel
+
+<style>
+    .cstm-drpdown {
+        position: absolute;
+        right: 198px;
+        top: -16px;
+    }
+
+        .cstm-drpdown label {
+            margin-right: 10px;
+            float: left;
+            margin-bottom: 0px;
+            line-height: 33px;
+        }
+
+    .icon-right tr td i {
+        float: right;
+    }
+
+    .edit-td .edit-area {
+        border: none;
+        margin: 0;
+        padding: 0;
+        display: inline-block;
+        text-align: center;
+        resize: vertical;
+        outline: auto;
+        overflow-y: hidden;
+        max-width: 120px;
+        width: 100% !important;
+        height: 30px !important;
+    }
+
+    .edit-controls {
+        display: inline-block;
+    }
+
+        .edit-controls button {
+            height: 30px;
+            width: 30px;
+            margin-left: 3px;
+        }
+
+    .edit-td {
+        position: relative;
+        padding: 0;
+    }
+
+    #btnShowModal {
+        border: none;
+        background-color: transparent;
+        color: #337ab7;
+    }
+
+    .modal-content {
+        width: 658px;
+        margin-left: 116px;
+    }
+
+    .bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*=col-] {
+        float: none;
+        display: inline-block;
+        right: 249px;
+        width: 213px;
+        position: absolute;
+        top: 124px;
+    }
+
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black;
+    }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+        }
+</style>
+<div class="col-md-12">
+    <div class="option-item-wrap">
+        <ul>
+            <li data-value="All Categories">
+                <a href="javascript:void(0);">
+                    All Categories
+                </a>
+            </li>
+            @if (Model.Category !=null)
+            {
+                foreach (var item in Model.Category)
+                {
+                    <li data-value="@item.Text">
+                        <a href="javascript:void(0);">
+                            @item.Text
+                        </a>
+                    </li>
+                }
+            }
+
+        </ul>
+    </div>
+</div>
+<div class="row tableCard">
+    <div class="col-md-12 body">
+        <div class="table-responsive">
+            <table id="table_id" class="table table-bordered table-striped table-hover js-basic-example dataTable icon-right" cellspacing="0" width="100%">
+                <thead class="container" id="Header">
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Category Name</th>
+                        <th>Product Name</th>
+                        <th class="text-center">Price (CAD)</th>
+                        <th class="text-center">Customer Price (CAD)</th>
+                        <th class="text-center">Discount %</th>
+                        <th hidden>Category</th>
+                        <th hidden>ProductId</th>
+                        <th hidden>CustomID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Products)
+                    {
+                        decimal customerPrice = Model.CustmersPrice.Where(p => p.ProductId == item.ProductId && p.CustomerId == Model.CustomerId).Select(x => x.Price).FirstOrDefault();
+                        decimal price = item.Rate - ((customerPrice * item.Rate) / 100);
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => modelItem.CustomerName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Category.CategoryName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ProductName)
+                            </td>
+                            <td class="text-center aPrice">
+                                @Html.DisplayFor(modelItem => item.Rate)
+                            </td>
+                            <td class="text-center custPrice" title="Click on for edit the Price">
+                                @price.ToString("0.00")
+                                <i class="fa fa-edit" aria-hidden="true"></i>
+                            </td>
+                            <td class="text-center custDiscount" title="Click on for edit the Discount">
+                                @Html.DisplayFor(modelItem => customerPrice)
+                                <i class="fa fa-edit" aria-hidden="true"></i>
+                            </td>
+                            <td hidden class="catId">
+                                @Html.DisplayFor(modelItem => item.CategoryId)
+                            </td>
+                            <td hidden class="proId">
+                                @Html.DisplayFor(modelItem => item.ProductId)
+                            </td>
+                            <td hidden class="customerId">@Model.CustomerId</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    // for initial active Category
+    $('.option-item-wrap ul li:nth-child(1)').addClass('active');
+    
+    // bindDatatableOption('#table_id');
+    table = $('#table_id').dataTable({
+        "paging": true,
+        "ordering": true,
+        "info": true,
+        "searching": true,
+        "pagingType": "full_numbers",
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        "scrollCollapse": true,
+        "responsive": true
+    });
+
+    $('.option-item-wrap ul li a ').on('click', function () {
+        $('.option-item-wrap ul li').removeClass('active');
+        $(this).parent().addClass('active');
+        catName = $(this).parent().attr('data-value');
+        if (catName != "All Categories")            
+            filterData(catName);
+        else
+            filterData('');
+    });
+
+    function filterData(catName) {
+        // for filter according to Category Id
+        table.api().column(1).search(catName).draw();
+    }
+
+</script>
+
+
+
+

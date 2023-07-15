@@ -1,0 +1,98 @@
+﻿@model MordenDoors.Models.ProductModel
+
+@using (Html.BeginForm("EditProduct", "Product", FormMethod.Post, new { role = "form" }))
+{
+    @Html.AntiForgeryToken() 
+    <div class="form-horizontal">
+        <h2 style="text-align:center">Update Product</h2>
+
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.HiddenFor(model => Model.ProductId)
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.CategoryId, "Categories", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-8">
+                @Html.DropDownList("CategoryId", Model.Categories, "-- Select Category --", new { @class = "form-control", required = "required" })
+                @Html.ValidationMessageFor(model => Model.CategoryId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.ProductName, "Product Name", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-8">
+                @Html.EditorFor(model => Model.ProductName, new { htmlAttributes = new { @class = "form-control", required = "required" } })
+                @Html.ValidationMessageFor(model => Model.ProductName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.Label("Work Stage", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-8">
+                @*@Html.ListBox("UserRole", Model.UserRoles, new { @multiple = "multiple", @class = "multiselect-ui form-control" })*@
+                @Html.ListBoxFor(m => m.UserRole, Model.UserRoles, new { @multiple = "multiple", @class = "multiselect-ui form-control" })
+               
+                @Html.ValidationMessageFor(model => Model.UserRole, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.ProductDescription, "Product Description", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-8">
+                @Html.EditorFor(model => Model.ProductDescription, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => Model.ProductDescription, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.UnitsOfMeasureID, "Unit Of Measurement", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-8">
+                @Html.DropDownList("UnitsOfMeasureID", Model.UnitsOfMeasures, "-- Select Unit --", new { @class = "form-control", required = "required" })
+                @Html.ValidationMessageFor(model => Model.UnitsOfMeasureID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.Rate, "Amount", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-8">
+                @Html.EditorFor(model => Model.Rate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => Model.Rate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        fgfjf
+        <div class="form-group">
+            @Html.LabelFor(model => Model.IsActive, "Is Active", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => Model.IsActive)
+                    @Html.ValidationMessageFor(model => Model.IsActive, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.SKU, "SKU", htmlAttributes: new { @class = "control-label col-md-4" })
+            <div class="col-md-8">
+                @Html.EditorFor(model => Model.SKU, new { htmlAttributes = new { @class = "form-control" } })
+
+                @Html.ValidationMessageFor(model => Model.SKU, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn bg-grow-early text-white" style=" margin-left: 172px" />
+            </div>
+        </div>
+    </div>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.multiselect-ui').multiselect({
+            includeSelectAllOption: true
+        });
+    });
+</script>

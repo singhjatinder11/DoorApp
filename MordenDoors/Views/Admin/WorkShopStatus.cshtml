@@ -1,0 +1,202 @@
+﻿@model IEnumerable<MordenDoors.Models.Customers.CustmerHomePage>
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+        </div>
+        <div class="card-header-tab card-header-tab-animation card-header">
+            <h4><b>WorkShop Status</b></h4>
+        </div>
+        <div class="card-body">
+            <table id="tableInProgress" class="table table-responsive-sm table-responsive-md table-responsive-lg table-bordered table-striped table-hover js-basic-example dataTable">
+                <thead class="container" id="Header">
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayName("Customer Name")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Order ID")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Product Name")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("H * W")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.WorkStage)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Ordered Quantity")
+                        </th>
+                        <th class="text-center">
+                            Action
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CustomerName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.OrderId)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ProductName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Height) * @Html.DisplayFor(modelItem => item.Width)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.WorkStage)
+                            </td>
+                            <td class="itemQty">
+                                @Html.DisplayFor(modelItem => item.OrderQuantity)
+                            </td>
+                            <td>
+                                <a href="javascript:void(0);" onclick="ViewOrderDetail(@item.OrderId)" data-toggle="tooltip" title="View" data-placement="right">
+                                    <div class="badge badge-info mr-1 ml-0">
+                                        <small>View</small>
+                                    </div>
+                                </a>
+                                @*@Html.ActionLink("Complete", "CompleteWork", "User", new { quantityDone = item.QuantityDone, operationsId = item.OperationsId}, new { @class = "btn btn-success" })*@
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div id="orderDetailModal" class="modal fade" role="dialog">
+    <div class='modal-header'>
+        <h2 class='modal-title text-center'>Order Detail</h2>
+        <button type='button' class='close' data-dismiss='modal'>&times;</button>
+    </div>
+    <div class="form-horizontal">
+        <table id="tbl_OrderDetail" class="table table-bordered table-striped text-center">
+            <thead style="background:black;color:white;">
+                <tr>
+                    <th>Order No.</th>
+                    <th>Tracking No.</th>
+                    @* <th>Current Stage</th>*@
+                    <th>Product Name</th>
+                    <th>Height</th>
+                    <th>Width</th>
+                    <th>Quantity</th>
+                    @*<th>Price</th>*@
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        bindDatatableOption('#tableInProgress');
+    });
+
+    function ViewOrderDetail(id) {
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("OrderDetail", "Order")',
+            data: JSON.stringify({ id: id }),
+            contentType: "application/json;",
+            dataType: "json",
+            success: function (response) {
+
+                var htmltr = '';
+                $('#tbl_OrderDetail tbody').empty();
+                $.each(response.data, function (index, value) {
+                    htmltr +="<tr>" +
+                        "<td>" + value.OrderId + "</td>" +
+                        "<td>" + value.TrackingID + "</td>" +
+                        "<td>" + value.ProductName + "</td>" +
+                        "<td>" + value.Height + "</td>" +
+                        "<td>" + value.Width + "</td>" +
+                        "<td>" + value.Quantity + "</td>" +
+                        "<td class='commentValue'> " + value.Comments + "</td > " +
+                        "</tr>";
+                    //if (value.Comments == null) {
+                    //    $('#tbl_OrderDetail').find('.commentValue')[0].innerText = 'No Comment';
+                    //}
+                });
+                $('#tbl_OrderDetail tbody').append(htmltr);
+                $('#MordenModal .modal-body').html($("#orderDetailModal").html());
+                $("#MordenModal").modal("show");
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+         });
+    }
+
+    @*function Complete(e) {
+
+        var row = jQuery(e).closest("tr");
+        OperationsId = row.find('.oprId').text().trim();
+        qtyDone = row.find('#item_QuantityDone').val();
+        itemqty = row.find('.itemQty').text().trim();
+        if (qtyDone != 0) {
+            if (qtyDone > itemqty)
+            toastr["error"]("Complete quantity not more than Order quantity.")
+        else {
+             $.ajax({
+            type: "GET",
+            url: '@Url.Action("CompleteWork", "User")',
+              data: { qtyDone: qtyDone, OperationsId: OperationsId },
+              success: function (response) {
+                  window.location.reload();
+            }
+        });
+        }
+        }
+        else {
+            toastr["error"]("quantity is greater than zero.")
+
+        }
+    };
+
+    $('.CompleteConfirm').on('click', function (event) {
+        event.preventDefault();
+        const url = $(this).attr('href');
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Is product complete?',
+            buttons: {
+                Yes: function () {
+
+                    window.location.href = url;
+                },
+                No: function () {
+                }
+            }
+        });
+    })
+    $('.AssignConfirm1').on('click', function (event) {
+        event.preventDefault();
+        const url = $(this).attr('href');
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Are you sure to Assign Product?',
+            buttons: {
+                Yes: function () {
+                    window.location.href = url;
+                },
+                No: function () {
+                }
+            }
+        });
+    })*@
+</script>
+
+

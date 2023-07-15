@@ -1,0 +1,862 @@
+﻿@model MordenDoors.ViewModels.OrderViewModel
+
+@{
+    ViewBag.Title = "Orders";
+    if (ViewBag.Page == "quotes") {
+        ViewBag.Title = "Quotes";
+    }
+    else if (ViewBag.Page == "workshop") {
+        ViewBag.Title = "Workshop";
+    }
+}
+<style>
+    .show-status-dropdown {
+        max-width: 222px;
+        width: 100%;
+    }
+
+    .pt-3 {
+        padding-top: 1.5rem !important;
+    }
+
+    .mr-sm-2 {
+        margin-right: .5rem !important;
+    }
+
+    .complete {
+        box-sizing: border-box;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+    }
+
+    #orderAction a {
+        text-decoration: none;
+    }
+    table.dataTable.dtr-inline.collapsed > tbody > tr[role="row"] > td:first-child:before {
+        background-color: #3cba9f;
+    }
+
+    table.dataTable.dtr-inline.collapsed > tbody > tr.parent > td:first-child:before {
+        background-color: red;
+    }
+    /* Switch button */
+    .btn-default.btn-on.active,
+    .btn-default.btn-off.active {
+        background-color: #5BB75B;
+        color: white;
+    }
+    .qtyDone {
+        width:60px!important;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12 col-lg-12">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="col-md-12 text-center d-flex content-justify-center">
+                    @if (ViewBag.Page == "workshop")
+                    {
+                        <h4 style="flex:1;text-indent:-113px;">Workshop</h4>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("AddOrder", "Order")" data-toggle="tooltip" title="Create Order" data-placement="left" class="btn btn-alternate float-left">
+                            <span class="fa fa-file-text"></span> Create Quote/Order
+                        </a>
+                        <h4 style="flex:1;text-indent:-113px;">@(ViewBag.Page == "quotes"? "Quote List":"Order List")</h4>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                @if (ViewBag.Page != "quotes"&& ViewBag.Page != "workshop")
+                {
+                    <div class="col-sm-6">
+                        <form action="/Order" class="form-inline" method="post">
+                            <div class="form-group">
+                                <label style="margin-right:10px; font-weight:bolder; font:larger">Choose Status: </label>
+                                @Html.DropDownList("StatusId", Model.OrdersStatus, new { @class = "form-control", @onchange = "this.form.submit();" })
+                            </div>
+                        </form>
+                    </div>
+                }
+                @if (ViewBag.Page != "workshop")
+                {
+                    <div class="@(ViewBag.Page == "quotes" ? "col-sm-12" : "col-sm-6") text-right">
+                        <div class="form-group">
+                            @Html.Label("Status", null, htmlAttributes: new { @class = "control-label" })
+                            <div class="btn-group" id="status">
+                                <a id="rdoQuote" class="btn btn-default btn-on btn-sm @(ViewBag.Page == "quotes" ? "active" : "")" href="/Quotes")">QUOTE</a>
+                                <a id="rdoOrder" class="btn btn-default btn-off btn-sm @(ViewBag.Page == "quotes" ? "" : "active")" href="/Order">ORDER</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div class="col-sm-12 col-md-12 col-lg-12">
+                    <table id="tbl_OrderList" class="table table-bordered table-hover table-striped js-basic-example dataTable">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>
+                                    Order No
+                                </th>
+                                <th>
+                                    Customer Name
+                                </th>
+                                <th>
+                                    Total Amount
+                                </th>
+                                <th>
+                                    Pending Amount
+                                </th>
+                                <th>
+                                    Order Date
+                                </th>
+                                <th>
+                                    Due Date
+                                </th>
+                                <th>
+                                    Total Quantity
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                @if (ViewBag.Page != "workshop")
+                                {
+                                <th class="none"></th>             
+                                }
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            @if (Model.Orders != null)
+                            {
+                                foreach (var item in Model.Orders)
+                                {
+                                <tr>
+                                    <td></td>
+                                    <td class="orderId">
+                                        @Html.DisplayFor(modelItem => item.Id)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CustomerName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.TotalAmount)
+                                    </td>
+
+                                    @if (item.PendingAmount == null)
+                                    {
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.TotalAmount)
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        if (item.PendingAmount >= 0)
+                                        {
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PendingAmount)
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>
+                                                <span>0.00</span>
+                                            </td>
+                                        }
+                                    }
+
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CretaedOn)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.DeliveryTime)
+                                    </td>
+                                    <td class="text-center">
+                                        @{ var q = Convert.ToInt32(item.ItemQuantity);}
+                                        @Html.DisplayFor(modelItem => q)
+                                    </td>
+                                    <td>
+                                        @if (ViewBag.Page == "quotes")
+                                        {
+                                            <a id="confirmOrder" href="javascript:void(0);" onclick="updateStatus(@item.Id, 7)" data-toggle="tooltip" title="To Confirm Order" data-placement="top">
+                                                <div class="badge badge-success mr-1 ml-0">
+                                                    To Confirm Order
+                                                </div>
+                                            </a>
+                                        }
+                                        else if (ViewBag.Page == "workshop")
+                                        {
+                                            <a href="javascript:void(0);" onclick="openOrderStatus(@item.Id)" data-toggle="tooltip" title="Update Status" data-placement="top">
+                                                <div class="badge badge-success mr-1 ml-0">
+                                                   Update Status
+                                                </div>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-control changeStatus" data-id="@item.Id" @(item.CurrentStatus.Value == 5 ? "disabled": "" ) >
+                                                @foreach (SelectListItem statusItem in Model.OrdersStatus)
+                                                {
+
+                                                    if (!statusItem.Value.Equals("0"))
+                                                    {
+                                                        string isSelected = item.CurrentStatus.HasValue && item.CurrentStatus.Value.ToString() == statusItem.Value ? "selected" : string.Empty;
+                                                      
+                                                        <option @isSelected value="@statusItem.Value">@statusItem.Text</option>
+                                                    }
+                                                }
+                                            </select>
+                                        }
+                                    </td>
+                                    @if (ViewBag.Page != "workshop")
+                                    {
+                                <td id="orderAction" style="white-space:nowrap">
+                                    @if (ViewBag.Page == "quotes")
+                                    {
+                                        <a href="@Url.Action("EditOrder", "Order", new { id = item.Id })" data-toggle="tooltip" title="Edit" data-placement="right">
+                                            <div class="badge badge-alternate mr-1 ml-0">
+                                                <small>Edit</small>
+                                            </div>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:void(0);" onclick="ViewOrderDetail(@item.Id)" data-toggle="tooltip" title="View" data-placement="right">
+                                            <div class="badge badge-info mr-1 ml-0">
+                                                <small>View</small>
+                                            </div>
+                                        </a>
+                                        <a href="@Url.Action("PaymentStatus", "Order", new { id = item.Id })" data-toggle="tooltip" title="Payment" data-placement="top">
+                                            <div class="badge badge-warning mr-1 ml-0">
+                                                <small>Payment</small>
+                                            </div>
+                                        </a>
+                                        <a href="javascript:void(0);" onclick="openreport(@item.Id);" data-toggle="tooltip" title="Work Order Report" data-placement="top">
+                                            <div class="badge badge-dark mr-1 ml-0">
+                                                <small>W/O</small>
+                                            </div>
+                                        </a>
+
+                                        if (item.StatusId == 7)
+                                        {
+                                            <a id="sendToShop" href="javascript:void(0);" data-toggle="tooltip" title="Send To Shop" data-placement="top" onclick="updateStatus(@item.Id, 2)">
+                                                <div class="badge badge-success mr-1 ml-0">
+                                                    <small>Send To Shop</small>
+                                                </div>
+                                            </a>
+                                        }
+                                        if (item.StatusId == 2)
+                                        {
+                                            <a id="retractToShop" href="javascript:void(0);" data-toggle="tooltip" title="Retract From Shop" data-placement="top" onclick="updateStatus(@item.Id, 7)">
+                                                <div class="badge badge-success mr-1 ml-0">
+                                                    <small>Retract From Shop</small>
+                                                </div>
+                                            </a>
+                                            <a href="javascript:void(0);" onclick="openOrderStatus(@item.Id);" data-toggle="tooltip" title="Update Status" data-placement="top">
+                                                <div class="badge badge-success mr-1 ml-0">
+                                                    <small>Update Status</small>
+                                                </div>
+                                            </a>
+                                        }
+                                    }
+                                </td>
+                                    }
+                                </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div id="orderDetailModal" class="modal fade" role="dialog">
+            <div class='modal-header'>
+                <h2 class='modal-title text-center'>Order Detail</h2>                
+                <button type='button' class='close' data-dismiss='modal'>&times;</button>
+            </div>
+            <div class="form-horizontal">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <h5 for="OrderNo">Order No:&nbsp;<span id="viewOrderId"></span></h5>
+                    </div>
+                    <div class="col-sm-10">
+                        <h5 for="TrackingNo">Tracking No:&nbsp;<span id="viewTrackingId"></span></h5>
+                    </div>
+                </div>
+                <table id="tbl_OrderDetail" class="table table-bordered table-striped text-center">
+                    <thead style="background:black;color:white;">
+
+                        <tr>
+
+                            @* <th>Current Stage</th>*@
+                            <th>Product Name</th>
+                            <th>Height</th>
+                            <th>Width</th>
+                            <th>Quantity</th>
+                            @*<th>Price</th>*@
+                            @*<th>Comment</th>*@
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous"></script>
+<script type="text/javascript">
+    //declare global variables
+    var ProductName;
+    var ItemId;
+    var StatusID;
+    var date = new Date();
+    var currentTime = date.toLocaleString();
+    var orderNo;
+    var stageId;
+    var releaseDate;
+    var startTime;
+    var stopTime;
+    var qtyDone;
+    var selectdEmp;
+    var operationID;
+    var $datatable;
+    //End
+    // onPage load function
+    $(document).ready(function () {
+       
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        today = dd + '-' + mm + '-' + yyyy;
+        $('#tbl_OrderList').dataTable({
+            "pagingType": "full_numbers",
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+
+            "responsive": true,
+            "order": [],
+            "columnDefs": [{
+                'targets': [0],
+                'orderable': false,
+            }],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    var startDate = moment(today, "DD.MM.YYYY");
+                    var endDate = moment(aData[6], "DD.MM.YYYY");
+                    var daysDiff = endDate.diff(startDate, 'days');
+                if (daysDiff <= 7 && daysDiff > 3) {
+                    $('td', nRow).css('background-color', 'lightGreen');
+                } else if (daysDiff == 0) {
+                    $('td', nRow).css('background-color', 'lightBlue');
+                }
+                else if (daysDiff == 1) {
+                    $('td', nRow).css('background-color', '#b3b3ff');
+                }
+                else if (daysDiff == 3 ) {
+                    $('td', nRow).css('background-color', 'lightYellow');
+                }
+                else if (daysDiff > 7) {
+                    $('td', nRow).css('background-color', 'white');
+                }
+                else {
+                    $('td', nRow).css('background-color', '#ff9999');
+                }
+                
+              
+                
+            }
+            
+            
+
+        });
+        
+        
+        $('[data-toggle="tooltip"]').tooltip();
+        $(document).on('change', '#productName', function () {
+            var productId = $(this).val();
+            FetchOperationListByProductId(productId);
+        });
+        $(document).on('change', '.employees-list', function () {
+            var empId = $(this).val();
+            var operationId = $(this).attr("data-id");
+            if (operationId) {
+                assignEmpToOperation(empId, operationId)
+            }
+            else {
+                toastr["warning"]("opps! having some issue please referesh your page");
+            }
+        });
+
+    });
+    
+
+    function assignEmpToOperation(empId, operationId) {
+        $.ajax({
+            type: "POST",
+            url: "/Order/AssignEmpToOperation",
+            data: JSON.stringify({ empId: empId, operationId: operationId }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                if (response) {
+                    $('#tblOperations tbody tr:first').find('.btnStart').removeAttr('disabled');
+                    var msg = "Employee " + (empId == 0 ? 'unassigned' : 'assigned') + " successfully";
+                    toastr["success"](msg);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response);
+            },
+            error: function (response) {
+                alert(response.d);
+            }
+        });
+    }
+
+   
+    
+    //Open Item Report
+    function openreport(id) {
+        var url = '../_Report.aspx?orderid=' + id;
+        var iframe = ' <iframe id="reportdata" src="' + url + '" style="width:100%; min-height:500px"></iframe>';
+        var headerDiv = '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button><h4 class="text-center mt-2">Work Order Report</h4>';
+        $('.modal-body').html(headerDiv).append(iframe);
+        $("#MordenModal").modal('show');
+    }
+
+    // Bind OrderStatus in modal
+    function openOrderStatus(id) {
+        $("#workstageId").val("0");
+        $("#productName").val("0");
+        $.get("@Url.Action("UpdateOrderStatus", "Order")/" + id,
+            function (data) {
+                $('.modal-body').html(data);
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetOrderDataByOrderId", "Order")',
+                    data: JSON.stringify({
+                        orderId: id
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                        success: function (response) {
+                            $("#txtOrderNo").text(id);
+                            $("#txtQty").text(response.quantity);
+                            FetchOperationListByProductId($('#productName').val());
+                    },
+                    failure: function (response) {
+                        swal({ title: "Error!", text: "Something went wrong.", icon: "Unsuccessful", button: "Ok" });
+                    }
+                });
+
+            });
+        $("#MordenModal").modal({
+            backdrop: 'static',
+            keyboard: false});
+        $("#tblOperations tbody").empty();
+    }
+
+    // Add Stage row on table
+    function addStageRow() {
+        var options = '<option value="0" text="Select Employee">Select Employee</option>';
+        var orderNo = $("#txtOrderNo").text();
+        var totalQuantity = $("#txtQty").text();
+        ProductName = $('#productName option:selected').text();
+        ItemId = $('#productName option:selected').val();
+        var stageValue = $('#workstageId option:selected').val();
+        var stageText = $('#workstageId option:selected').text();
+        if ($('#productName option:selected').val() == "0") {
+            toastr["error"]("Please choose workstage.")
+        }
+        if ($('#workstageId option:selected').val() == "0") {
+            toastr["error"]("Please choose workstage.")
+        }
+        else {
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Add new operation!',
+                buttons: {
+                    confirm: function () {
+                        AddOperation(orderNo, stageValue, totalQuantity, ItemId);
+                    },
+                    cancel: function () {
+                    }
+                }
+            });
+        }
+    }
+
+    // Start task fn for individual stage
+
+    function taskStart(e) {
+        var row = jQuery(e).closest("tr");
+        orderNo = $("#txtOrderNo").text();
+        selectdEmp = row.find('.employees-list option:selected').val();
+        stageId = row.find('.workStageID').text();
+        oprID = row.find('.rowId').text();
+        startTime = currentTime;
+        releaseDate = row.find('.releasedDate').text();
+
+        if (selectdEmp=="0") {
+            toastr["error"]("Select Employee!")
+        }
+        else {
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Start working on this order!',
+                buttons: {
+                    confirm: function () {
+                        row.find('.employees-list').prop("disabled", true);
+                        row.find('.btnStart').css("display", "none");
+                        UpdateOperation(oprID, orderNo, stageId, selectdEmp, false, 0);
+                        row.find('.startTime').css("display", "block");
+                        row.find('.startTime').text('');
+                        row.find('.startTime').text(startTime);
+                        row.find('.btnStop').css("display", "block");
+                    },
+                    cancel: function () {
+                    }
+                }
+            });
+        }
+    };
+
+    // Stop task fn for individual stage
+    function taskStop(e) {
+        var row = jQuery(e).closest("tr");
+        orderNo = $("#txtOrderNo").text();
+        orderQuantity = $("#itemQty" + row.find('.rowId').text()).text();
+        selectdEmp = row.find('.employees-list option:selected').val();
+        stageId = row.find('.workStageID').text();
+        oprID = row.find('.rowId').text();
+        qtyDone = row.find('.qtyDone').val();
+        releaseDate = row.find('.releasedDate').text();
+        startTime = row.find('.startTime').text();
+        var location = row.find('.location').val().trim();
+        
+        stopTime = currentTime;
+        if (!row.find('.complete').is(":checked")) {
+            toastr["error"]("Check complete checkbox.")
+        }
+        else if (row.find('.qtyDone').val() == "") {
+            toastr["error"]("Fill quantity field.")
+        }
+        else if (qtyDone != orderQuantity) {
+            toastr["error"]("Quantity done must equal order quantity.")
+        }
+        else if (!location) {
+            toastr["error"]("Fill location field.")
+        }
+        else {
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Stop working on this order!',
+                buttons: {
+                    confirm: function () {
+                        row.find('.btnStart').css("display", "none");
+                        row.find('.btnStop').css("display", "none");
+                        row.find('.stopTime').css("display", "block");
+                        row.find('.stopTime').text('');
+                        row.find('.stopTime').text(stopTime);
+                        row.find('.complete').prop("disabled", true);
+                        row.find('.qtyDone').prop("disabled", true);
+                        row.find('.location').prop("disabled", true);
+                        UpdateOperation(oprID, orderNo, stageId, selectdEmp, true, qtyDone, location);
+                    },
+                    cancel: function () {
+                    }
+                }
+             });
+        }
+    };
+
+    // Add Operation in DB
+    function AddOperation(orderNo, stageId, totalQuantity, itemId)
+    {
+        $('.loader').css('display', 'flex');
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("AddOperation", "Order")',
+            data: { orderNo: orderNo, stageId: stageId, totalQuantity: totalQuantity, itemId: itemId },
+            success: function (response) {
+                $('.loader').css('display', 'none');
+                if (response.data>0) {
+                    operationID = response.data;
+                    $("#tblOperations tbody").html('');
+                    FetchOperationListByProductId(itemId);
+                    toastr["success"]("Operation added successfully");
+                }
+                else {
+                toastr["error"]("Operation not added.");
+                }
+            },
+            error: function (response) {
+                $('.loader').css('display', 'none');
+                alert("Error");
+            }
+        });
+    }
+
+    // Fetch Operation List from DB
+    function FetchOperationListByProductId(id) {
+        $('#tblOperations tbody').html('');
+        var options = '';
+        // For Fetch Data
+        $('.loader').css('display', 'flex');
+        $.ajax({
+            type: "POST",
+            async:false,
+            url: '@Url.Action("OperationsByProductId", "Order")',
+            data: { itemId: id },
+            success: function (response) {
+                $('.loader').css('display', 'none');
+                var priority = 0;
+                $.each(response.operationList, function (index, row) {
+                    if (row.completeStatus) {
+                        priority = row.Sort + 1;
+                    }
+                    var html = '';
+                    html += '<tr data-priority="' + row.Sort + '" class=' + ((row.completeStatus || row.startTime != null) ? "static" : "") + '><td hidden class="rowId" id="rowId' + row.Id + '">' + row.Id + '</td><td hidden class="ItemId" id="ItemId' + row.Id + '">' + row.OrderItem +
+                        '</td><td class="productName" id="productName' + row.Id +'"><i class="fa fa-arrows-v"></i> ' + row.productName + '</td><td style="display:none"><label id="workStageID' + row.Id +
+                            '" class="workStageID">' + row.workstageId + '</label></td>' +
+                            '<td> <label id="workstage' + row.Id +'" class="workStage">' + row.workstage + '</label></td > ' +
+                            '<td><label id="itemQty' + row.Id +'">' + row.itemQty + '</label></td>';
+                    if (row.workstage != null)
+                    {
+                        // For Bind Employee
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("GetEmployee", "Order")',
+                            data: JSON.stringify({
+                                Id: row.workstageId
+                            }),
+                            async: false,
+                            contentType: "application/json; charset=utf-8",
+                            dataType: 'json',
+                            success: function (response) {
+                                options = '<option value="0" text="Select Employee">Select Employee</option>';
+                                $.each(response.data, function (index, value) {
+                                    options += '<option value="' + value.UserId + '" text="' + value.Username + '" ' + (value.UserId == row.empID?"selected":"") + '>' + value.Username + '</option>';
+                                });
+                                html += '<td><select id="EmployeeList_' + row.Id + '" class="employees-list form-control" data-id="' + row.Id + '">' + options + '</select></td>';
+                                options = '';
+                            }
+                        });
+                    }
+                    if (row.startTime==null) {
+                        html += '<td>' +
+                            '<label class="startTime" style="display:none">' + row.startTime + '</label>' +
+                            '<input type ="button" class="btn btn-success btnStart" value ="Start" onclick="taskStart(this);" ' + (priority != row.Sort?"disabled":"") + '>' +
+                            '</td>';
+                        }
+                    else {
+                        html += '<td>' +
+                            '<label class="startTime">' + new Date(parseInt((row.startTime).substr(6))).toLocaleString() + '</label>' +
+                            '</td>';
+                    }
+
+                    html += '<td><input type="checkbox" class="complete" id="complete_' + row.Id + '" ' + (row.completeStatus ? "checked disabled" : "") + '></td>';
+
+                    if (row.qtyDone || row.completeStatus) {
+                        html += '<td>' + row.qtyDone+'</td>';
+                    }
+                    else {
+                        html += '<td><input type="text" class="form-control qtyDone" id="QtyDone_' + row.Id + '" width="60px"></td>';
+                    }
+
+                    if (row.Location || row.completeStatus) {
+                        html += '<td>' + (row.Location ? row.Location:'-')+ '</td>';
+                    }
+                    else {
+                        html += '<td><input type="text" class="form-control location" id="location_' + row.Id + '"></td>';
+                    }
+
+                    if (row.finishTime == null && row.startTime == null) {
+                        html += '<td>' +
+                            '<label class="stopTime" style="display:none">' + row.finishTime + '</label>' +
+                            '<input type ="button" class="btn btn-danger btnStop" value = "Stop" onclick ="taskStop(this);" style = "display:none">' +
+                            '</td>' +
+                            '</tr>';
+                    }
+                    else if (row.finishTime == null && row.startTime != null)
+                    {
+                        html += '<td>' +
+                            '<label class="stopTime" style="display:none">' + row.finishTime + '</label>' +
+                            '<input type ="button" class="btn btn-danger btnStop" value = "Stop" onclick ="taskStop(this);">' +
+                            '</td>' +
+                            '</tr>';
+                    }
+                    else
+                    {
+                        html += '<td>' +
+                            '<label class="stopTime">' + new Date(parseInt((row.finishTime).substr(6))).toLocaleString() + '</label>' +
+                            '</td>' +
+                            '</tr>';
+                    }
+                    $("#tblOperations").append(html);
+                    if (row.startTime != null) {
+                        $('#EmployeeList_' + row.Id + '').prop("disabled", true);
+                    }
+                });
+            },
+            error: function (response) {
+                $('.loader').css('display', 'none');
+                alert("Error");
+            }
+        });
+        changeProductWSPriority();
+    }
+    function changeProductWSPriority() {
+        $('#tblOperations tbody').sortable({
+            items: 'tr:not(.static)',
+            cursor: 'pointer',
+            axis: 'y',
+            dropOnEmpty: false,
+            update: function (e, ui) {
+                var sortOrder = [];
+                $(this).children().each(function (index) {
+                    sortOrder.push(parseInt($(this).find('.rowId').text()))
+                });
+                UpdateOprSortingOrder(sortOrder);
+                FetchOperationListByProductId($('#productName').val())
+            }
+        });
+    }
+    function UpdateOprSortingOrder(oprIds)
+    {
+        $('.loader').css('display', 'flex');
+        $.ajax({
+            type: "POST",
+            async: false,
+            url: '@Url.Action("UpdateOperationSorting", "Order")',
+            data: JSON.stringify({ oprIds: oprIds, orderItemId: parseInt($('#productName').val()) }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                //toastr["success"]("Operation updated successfully");
+                $('.loader').css('display', 'none');
+            },
+            error: function (response) {
+                $('.loader').css('display', 'none');
+                alert("Error");
+            }
+        });
+    }
+    //Update Operation to DB
+    function UpdateOperation(operationID, orderNo, stageId, selectdEmp, isComplete, qytDone, location)
+    {
+        $.ajax({
+            type: "POST",
+            async: false,
+            url: '@Url.Action("UpdateOperation", "Order")',
+            data: JSON.stringify({ operationID: parseInt(operationID), orderno: parseInt(orderNo), stageID: parseInt(stageId), empId: selectdEmp, isComplete: isComplete, qytDone: qytDone, location: location }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                $('.loader').css('display', 'none');
+                toastr["success"]("Operation updated successfully");
+                FetchOperationListByProductId($('#productName').val());
+            },
+            error: function (response) {
+                alert("Error");
+            }
+        });
+    }
+
+    //Update Status
+    $("#tbl_OrderList").on("change", '.changeStatus', function () {
+        var orderId = parseInt($(this).data('id'));
+        var toStatusId = parseInt(this.value);
+        updateStatus(orderId, toStatusId)
+    });
+    function updateStatus(orderId, toStatusId) {
+        var message = "change the status of this order";
+        if (toStatusId == 2) {
+            message = 'send to shop';
+        }
+        else if (toStatusId == 7 && '@ViewBag.Page' == "quotes"  ) {
+            message = 'confirm this order';
+        }
+        else if (toStatusId == 7) {
+            message = 'retract from shop';
+        }
+        else if (toStatusId == 5) {
+            message = 'complete this order';
+        }
+        $.confirm({
+		    title: 'Confirm!',
+            content: 'Do you really want to ' + message +'?',
+		    buttons: {
+                Yes: function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Order/ChangeStatus",
+                        data: JSON.stringify({ changeStatusValueTo: toStatusId , orderId: orderId }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (response) {
+                            location.reload();
+                        },
+                        failure: function (response) {
+                            swal({ title: "Error", text: "Record not updated", icon: "Unsuccessful", button: "Ok" });
+                        },
+                        error: function (response) {
+                            alert(response.d);
+                        }
+                    });
+                },
+			    No: function () {}
+		    }
+	    });
+    }
+
+    //Details of Orders
+    function ViewOrderDetail(id) {
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("OrderDetail", "Order")',
+            data: JSON.stringify({ id: id }),
+            contentType: "application/json;",
+            dataType: "json",
+            success: function (response) {
+                var htmltr = '';
+                var orderId, trackingId = '';
+
+                $('#tbl_OrderDetail tbody').empty();
+                $.each(response.data, function (index, value) {
+                    htmltr +="<tr>" +
+                        "<td>" + value.ProductName + "</td>" +
+                        "<td>" + value.Height + "</td>" +
+                        "<td>" + value.Width + "</td>" +
+                        "<td>" + value.Quantity + "</td>" +
+                        "</tr>";
+                    orderId = value.OrderId;
+                    trackingId = value.TrackingID;
+                });
+                $("#viewOrderId").text(orderId);
+                $("#viewTrackingId").html(trackingId);
+
+                $('#tbl_OrderDetail tbody').append(htmltr);
+                $('#MordenModal .modal-body').html($("#orderDetailModal").html());
+                $("#MordenModal").modal("show");
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+         });
+    }
+
+    // For clear local storage
+    function clearLocalStorage() {
+        localStorage.setItem("tempOrderItem", '');
+        localStorage.setItem("tempUserItem", '');
+    }
+
+</script>

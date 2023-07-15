@@ -1,0 +1,132 @@
+﻿@model IEnumerable<MordenDoors.ViewModels.WorkStageViewModel>
+
+@{
+    ViewBag.Title = "Work Stages";
+}
+<style>
+    table th {
+        text-align: center;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12 col-lg-12 mx-auto">
+        <div class="main-card mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title">
+                    <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                    Add Workstage
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Sr No.</th>
+                            <th>Stage Name</th>
+                            <th>Stage Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        @{int i = 0;
+                            foreach (MordenDoors.ViewModels.WorkStageViewModel item in Model)
+                            {
+                                <tr>
+                                    <td>@(i = i + 1)</td>
+                                    <td><span id="stageName-@item.Id">@item.StageName</span></td>
+                                    <td><span id="stageDesc-@item.Id">@item.StageDescription</span></td>
+                                    <td>
+                                        <button class="btn btn-info" onclick="editWorkStage(@item.Id);">Edit</button>
+                                        <button class="btn-wide btn-shadow btn btn-danger" onclick="deleteWorkStage(@item.Id);">Delete</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+                <div class="row">
+                    <div class="col text-center">
+                        <button class="btn text-center btn-success" data-toggle="modal" onclick="createWorkStage();">Create</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function editWorkStage(id) {
+        $.get("@Url.Action("EditWorkStage", "WorkStage")/" + id,
+            function (data) {
+                $('.modal-body').html(data);
+            });
+        $("#MordenModal").modal("show");
+    }
+
+    function createWorkStage() {
+        $.get("@Url.Action("CreateWorkStage", "WorkStage")",
+            function (data) {
+                $('.modal-body').html(data);
+            });
+        $("#MordenModal").modal("show");
+
+    }
+    function deleteWorkStage(stageId) {
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Do you really want to delete this workstage?',
+            buttons: {
+                Yes: function () {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/WorkStage/DeleteWorkStage',
+                        data: JSON.stringify({ stageId: stageId }),
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.status) {
+                                $.confirm({
+                                    title: 'Done!',
+                                    content: 'Record Deleted Successfully.',
+                                    buttons: {
+                                        Ok: function () {
+                                            window.location.reload();
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                toastr["Error"]("Record not deleted.")
+                            }
+                        },
+                        error: function () {
+                            toastr["Error"]("Record not deleted.")
+                        }
+                    });
+                },
+                No: function () { }
+            }
+        });
+    }
+     $(function() {
+         var createResult = '@TempData["result"]';
+         var updateResult = '@TempData["update"]';
+         if (createResult != '') {
+             if (createResult) {
+                 toastr["success"]("WorkStage added successfully.")
+             }
+             else {
+                 toastr["Error"]("WorkStage not added.")
+             }
+         }
+         if(updateResult != '') {
+             if (updateResult) {
+                 toastr["success"]("WorkStage updated successfully.")
+             }
+             else {
+                 toastr["Error"]("WorkStage not updated.")
+             }
+         }
+    });
+
+</script>

@@ -1,0 +1,135 @@
+﻿@model MordenDoors.Models.RegisterViewModel
+@{
+    ViewBag.Title = "Detail";
+    string dateOfBirth = Model.DateOfBirth.HasValue ? Model.DateOfBirth.Value.ToString("dd-MM-yyyy") : string.Empty;
+}
+<style>
+    .media-body {
+        font-weight: 500;
+        line-height: 1.2;
+        color: #3075BA;
+    }
+
+    .pmd-list-title {
+        font-size: 1rem;
+    }
+
+    .pmd-list-subtitle {
+        color: black;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+</style>
+<div class="col-md-12 col-lg-12 mx-auto">
+    <div class="main-card mb-3 card">
+        <div class="card-header-tab card-header-tab-animation card-header">
+            <div class="col-md-2 card-header-title">
+                <i class="header-icon lnr-apartment icon-gradient bg-love-kiss"> </i>
+                Employee Detail
+            </div>
+            <div class="col-md-10 text-right">
+                <a href="@Url.Action("EditEmployee", "Admin", new { email = Model.Email },null)" data-toggle="tooltip" title="Add Employee" data-placement="right" class="btn btn-alternate"><span class="fa fa-edit"></span> Edit</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Basic Information -->
+            <div class="details-tab">
+                <div class="d-flex flex-row align-items-center mb-2">
+                    <h3 class="media-body">Basic Information</h3>
+                </div>
+                <div class="row view-basic-card">
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">
+                            @Html.DisplayNameFor(model => model.Email)
+                        </label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayFor(model => model.Email)
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">
+                            @Html.DisplayNameFor(model => model.EmoployeeNumber)
+                        </label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayFor(model => model.EmoployeeNumber)
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">@Html.DisplayNameFor(model => model.FirstName)</label>
+                        <p class="pmd-list-title">@Html.DisplayFor(model => model.FirstName)</p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">@Html.DisplayNameFor(model => model.LastName)</label>
+                        <p class="pmd-list-title"><label>@Html.DisplayFor(model => model.LastName)</label></p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">@Html.DisplayNameFor(model => model.Gender)</label>
+                        <p class="pmd-list-title"><label>@Html.DisplayFor(model => model.Gender)</label></p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">Date of Birth</label>
+                        <p class="pmd-list-title"><label>@dateOfBirth</label></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="details-tab">
+                <!-- View Card -->
+                <div class="d-flex flex-row align-items-center mb-2">
+                    <h3 class="media-body">Contact Information</h3>
+                </div>
+                <div class="row view-contact-card">
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">Address Line 1</label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayFor(model => model.AddrLine1)
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">Address Line 2</label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayFor(model => model.AddrLine2)
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">Country</label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayFor(model => model.Country)
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">Province</label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayFor(model => model.stateName)
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">City</label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayNameFor(model => model.City)
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">Postal Code</label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayFor(model => model.Postalcode)
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label class="pmd-list-subtitle">Print Check Name</label>
+                        <p class="pmd-list-title">
+                            @Html.DisplayFor(model => model.PrintOnCheckName)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
